@@ -155,7 +155,10 @@ export const useExportTasksStore = create<ExportTasksState>()(
               updates.completedAt = new Date().toISOString();
               get().updateTask(id, updates);
             } else if (task.status === 'FAILED') {
-              updates.errorMessage = normalizeErrorMessage(task.error_message || task.error || t('exportStore.exportFailed'));
+              const taskErrorMessage = task.error_message
+                || (typeof task.error === 'string' ? task.error : task.error?.message)
+                || t('exportStore.exportFailed');
+              updates.errorMessage = normalizeErrorMessage(taskErrorMessage);
               updates.completedAt = new Date().toISOString();
               get().updateTask(id, updates);
             } else if (task.status === 'PENDING' || task.status === 'RUNNING' || task.status === 'PROCESSING') {

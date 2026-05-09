@@ -225,7 +225,7 @@ class ExportService:
             or 'max retries exceeded' in lowered
             or 'connection aborted' in lowered
             or 'connection reset' in lowered
-        ):
+        ) and ('codex' in lowered or 'chatgpt' in lowered):
             help_text = (
                 '连接 Codex 服务时网络中断，导致文本样式提取失败。'
                 '请稍后重试；如果反复出现，可重新登录 Codex/OpenAI 后再试。'
