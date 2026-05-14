@@ -465,11 +465,11 @@ class AIService:
             if current_page is None:
                 return None
 
-            if stripped in ('**大纲要点：**', '**Outline Points:**'):
+            if stripped in ('**大纲要点：**', '**大纲要点:**', '**Outline Points:**', '**Outline Points：**'):
                 current_mode = 'points'
                 return None
 
-            if stripped in ('**页面描述：**', '**Page Description:**'):
+            if stripped in ('**页面描述：**', '**页面描述:**', '**Page Description:**', '**Page Description：**'):
                 current_mode = 'description'
                 return None
 
