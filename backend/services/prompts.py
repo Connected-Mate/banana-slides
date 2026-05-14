@@ -446,26 +446,44 @@ Now extract the outline structure from the description text above. Return only t
 
 
 def get_description_to_outline_prompt_markdown(project_context: 'ProjectContext', language: str = None) -> str:
-    """从描述文本解析出大纲的 prompt（Markdown 输出，用于流式生成）"""
+    """从描述文本解析出逐页大纲和页面描述的 prompt（Markdown 输出，用于流式生成）"""
     description_text = project_context.description_text or ""
 
     prompt = (f"""\
-You are a helpful assistant that analyzes a user-provided PPT description text and extracts the outline structure.
+You are a helpful assistant that analyzes a user-provided PPT description text and converts it into page-by-page slide structure.
 
 The user has provided the following description text:
 
 {description_text}
 
-Your task is to extract the outline structure (titles and key points) for each page.
+Your task is to first split the description into pages, then produce the outline and the page description for each page from that same split.
+Each output page must contain both the outline points and the page description. The page count is defined by your page split; do not run a separate outline-only split.
 
 Output rules:
 - Use `# Part Name` for major sections (only if the text has clear parts/chapters)
 - Use `## Page Title` for each page
-- Use `- ` bullet points for key points under each page
-- Preserve the logical structure from the original text
+- Under each page, output `**大纲要点：**` followed by `- ` bullet points. If the requested output language is English, use `**Outline Points:**` instead.
+- Then output `**页面描述：**` followed by the corresponding page description text. If the requested output language is English, use `**Page Description:**` instead.
+- Preserve layout, style, material, and content details in the page description
+- Use `<!-- PAGE_END -->` after each page
 - Do NOT wrap in code blocks or add any extra text
 
-Now extract the outline structure from the description text above. Output `<!-- END -->` on the last line when finished.
+Example:
+## 标题
+**大纲要点：**
+- 要点一
+- 要点二
+**页面描述：**
+页面标题：标题
+
+页面文字：
+- 这一页的正文内容
+
+其他页面素材：
+排版、风格、图片素材等要求
+<!-- PAGE_END -->
+
+Now split the description text above and output the page-by-page structure. Output `<!-- END -->` on the last line when finished.
 {get_language_instruction(language)}
 """)
 

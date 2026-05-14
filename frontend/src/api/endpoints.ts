@@ -136,6 +136,7 @@ export interface OutlineStreamPage {
   title: string;
   points: string[];
   part?: string;
+  description_text?: string;
 }
 
 export interface OutlineStreamCallbacks {

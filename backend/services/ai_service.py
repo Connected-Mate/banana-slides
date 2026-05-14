@@ -407,7 +407,83 @@ class AIService:
         buffer = ""
         current_part = None
         current_page = None
+        current_mode = 'points'
         stream_complete = False
+
+        def _new_page(title: str) -> Dict:
+            page = {
+                'title': title,
+                'points': [],
+                'description_lines': [],
+            }
+            if current_part:
+                page['part'] = current_part
+            return page
+
+        def _finalize_page(page: Optional[Dict]) -> Optional[Dict]:
+            if not page:
+                return None
+            result = {
+                'title': page.get('title', ''),
+                'points': page.get('points', []),
+            }
+            if page.get('part'):
+                result['part'] = page['part']
+            description_text = "\n".join(page.get('description_lines', [])).strip()
+            if description_text:
+                result['description_text'] = description_text
+            return result
+
+        def _process_line(line: str, stripped: str):
+            nonlocal current_part, current_page, current_mode, stream_complete
+
+            if stripped == '<!-- END -->':
+                stream_complete = True
+                return None
+
+            if stripped == '<!-- PAGE_END -->':
+                finished = _finalize_page(current_page)
+                current_page = None
+                current_mode = 'points'
+                return finished
+
+            if not stripped:
+                if current_page is not None and current_mode == 'description':
+                    current_page['description_lines'].append('')
+                return None
+
+            if stripped.startswith('# ') and not stripped.startswith('## '):
+                current_part = stripped[2:].strip()
+                return None
+
+            if stripped.startswith('## '):
+                finished = _finalize_page(current_page)
+                current_page = _new_page(stripped[3:].strip())
+                current_mode = 'points'
+                return finished
+
+            if current_page is None:
+                return None
+
+            if stripped in ('**大纲要点：**', '**Outline Points:**'):
+                current_mode = 'points'
+                return None
+
+            if stripped in ('**页面描述：**', '**Page Description:**'):
+                current_mode = 'description'
+                return None
+
+            if current_mode == 'description':
+                current_page['description_lines'].append(line.rstrip())
+                return None
+
+            if stripped.startswith('- '):
+                current_page['points'].append(stripped[2:].strip())
+            else:
+                # Backward/forward compatible: support sentence-style outline lines
+                # generated under each title (without "- " prefix).
+                current_page['points'].append(stripped)
+            return None
 
         for chunk in self.text_provider.generate_text_stream(prompt, thinking_budget=actual_budget):
             buffer += chunk
@@ -415,64 +491,21 @@ class AIService:
             # Process complete lines from buffer
             while '\n' in buffer:
                 line, buffer = buffer.split('\n', 1)
-                stripped = line.strip()
+                finished_page = _process_line(line, line.strip())
+                if finished_page:
+                    yield finished_page
 
-                if not stripped:
-                    continue
-
-                if stripped == '<!-- END -->':
-                    stream_complete = True
-                    continue
-
-                if stripped.startswith('# ') and not stripped.startswith('## '):
-                    current_part = stripped[2:].strip()
-                elif stripped.startswith('## '):
-                    # New page detected — yield previous page
-                    if current_page:
-                        yield current_page
-                    current_page = {
-                        'title': stripped[3:].strip(),
-                        'points': [],
-                    }
-                    if current_part:
-                        current_page['part'] = current_part
-                elif stripped.startswith('- ') and current_page is not None:
-                    current_page['points'].append(stripped[2:].strip())
-                elif current_page is not None:
-                    # Also accept sentence-style content line under the title.
-                    current_page['points'].append(stripped)
-
-        # Process remaining buffer (same logic as main loop)
+        # Process remaining buffer
         if buffer.strip():
-            buffer += '\n'
-            while '\n' in buffer:
-                line, buffer = buffer.split('\n', 1)
-                stripped = line.strip()
-                if not stripped:
-                    continue
-                if stripped == '<!-- END -->':
-                    stream_complete = True
-                    continue
-                if stripped.startswith('# ') and not stripped.startswith('## '):
-                    current_part = stripped[2:].strip()
-                elif stripped.startswith('## '):
-                    if current_page:
-                        yield current_page
-                    current_page = {
-                        'title': stripped[3:].strip(),
-                        'points': [],
-                    }
-                    if current_part:
-                        current_page['part'] = current_part
-                elif stripped.startswith('- ') and current_page is not None:
-                    current_page['points'].append(stripped[2:].strip())
-                elif current_page is not None:
-                    # Also accept sentence-style content line under the title.
-                    current_page['points'].append(stripped)
+            for line in buffer.split('\n'):
+                finished_page = _process_line(line, line.strip())
+                if finished_page:
+                    yield finished_page
 
         # Yield last page
-        if current_page:
-            yield current_page
+        finished_page = _finalize_page(current_page)
+        if finished_page:
+            yield finished_page
 
         # Yield completion sentinel
         yield {'__stream_complete__': stream_complete}
@@ -1087,4 +1120,3 @@ class AIService:
     def extract_style_description(self, image_path: str) -> str:
         """从图片中提取风格描述"""
         return self._generate_text_from_image(get_style_extraction_prompt(), image_path)
-
