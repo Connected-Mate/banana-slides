@@ -133,11 +133,12 @@ test.describe('image quality control setting', () => {
     await mockPreviewProject(page);
 
     await page.goto(`/project/${projectId}/preview`);
-    const qualityPanel = page.locator('aside').filter({ hasText: /质量控制|Quality Control/ });
-    await expect(qualityPanel.getByText(/已关闭|Off/)).toBeVisible();
-    await qualityPanel.getByRole('switch', { name: /质量控制|Quality Control/ }).click();
+    await expect(page.locator('aside').getByRole('switch', { name: /质量控制|Quality Control/ })).toHaveCount(0);
+    const qualitySwitch = page.locator('main').getByRole('switch', { name: /质量控制|Quality Control/ });
+    await expect(qualitySwitch).toHaveAttribute('aria-checked', 'false');
+    await qualitySwitch.click();
 
     await expect.poll(() => payloads.at(-1)?.enable_image_quality_control).toBe(true);
-    await expect(qualityPanel.getByText(/已开启|On/)).toBeVisible();
+    await expect(qualitySwitch).toHaveAttribute('aria-checked', 'true');
   });
 });

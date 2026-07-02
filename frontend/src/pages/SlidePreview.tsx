@@ -2271,36 +2271,6 @@ export const SlidePreview: React.FC = () => {
                 ? t('preview.generateSelected', { count: selectedPageIds.size })
                 : t('preview.batchGenerate', { count: currentProject.pages.length })}
             </Button>
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 dark:border-border-primary bg-gray-50 dark:bg-background-tertiary px-3 py-2">
-              <div className="min-w-0 flex items-start gap-2">
-                <ShieldCheck size={16} className="mt-0.5 flex-shrink-0 text-banana-600 dark:text-banana-300" />
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-gray-800 dark:text-foreground-primary">
-                    {t('preview.qualityControl')}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-foreground-tertiary">
-                    {imageQualityControlEnabled ? t('preview.qualityControlOn') : t('preview.qualityControlOff')} · {t('preview.qualityControlDesc')}
-                  </div>
-                </div>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={imageQualityControlEnabled}
-                aria-label={t('preview.qualityControl')}
-                onClick={handleToggleImageQualityControl}
-                disabled={isSavingImageQualityControl}
-                className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-banana-500 focus:ring-offset-2 disabled:opacity-60 ${
-                  imageQualityControlEnabled ? 'bg-banana-500' : 'bg-gray-300 dark:bg-background-hover'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    imageQualityControlEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
           </div>
           
           {/* 缩略图列表：桌面端垂直，移动端横向滚动 */}
@@ -2527,6 +2497,32 @@ export const SlidePreview: React.FC = () => {
 
                   {/* 操作 */}
                   <div className="flex items-center gap-1.5 md:gap-2 w-full sm:w-auto justify-center">
+                    <div
+                      className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-border-primary bg-gray-50 dark:bg-background-tertiary px-2.5 py-1.5"
+                      title={`${imageQualityControlEnabled ? t('preview.qualityControlOn') : t('preview.qualityControlOff')} · ${t('preview.qualityControlDesc')}`}
+                    >
+                      <ShieldCheck size={15} className="flex-shrink-0 text-banana-600 dark:text-banana-300" />
+                      <span className="hidden md:inline text-xs font-medium text-gray-700 dark:text-foreground-secondary whitespace-nowrap">
+                        {t('preview.qualityControl')}
+                      </span>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={imageQualityControlEnabled}
+                        aria-label={t('preview.qualityControl')}
+                        onClick={handleToggleImageQualityControl}
+                        disabled={isSavingImageQualityControl}
+                        className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-banana-500 focus:ring-offset-2 disabled:opacity-60 ${
+                          imageQualityControlEnabled ? 'bg-banana-500' : 'bg-gray-300 dark:bg-background-hover'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                            imageQualityControlEnabled ? 'translate-x-5' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
                     {/* 手机端：模板更换按钮 */}
                     <Button
                       variant="ghost"
