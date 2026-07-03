@@ -901,7 +901,7 @@ class AIService:
           "reason": "short reason"
         }}
 
-        Page number: {page_index or ''}
+        Page number: {page_index if page_index is not None else ''}
 
         Generation prompt:
         {generation_prompt}

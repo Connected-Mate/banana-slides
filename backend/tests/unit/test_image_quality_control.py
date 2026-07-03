@@ -6,6 +6,7 @@ from services.ai_service import AIService
 from services.task_manager import (
     IMAGE_QUALITY_CONTROL_MAX_ATTEMPTS,
     ImageQualityControlError,
+    _format_quality_review_failure,
     _get_absolute_page_index,
     generate_image_until_quality_passes,
     get_image_quality_control_enabled,
@@ -49,6 +50,16 @@ def test_quality_review_uses_absolute_page_index_for_partial_generation():
         order_index = 4
 
     assert _get_absolute_page_index(PageLike(), 1) == 5
+
+
+def test_quality_review_failure_formats_string_issues_as_one_issue():
+    message = _format_quality_review_failure({
+        'passed': False,
+        'issues': 'bad style',
+        'reason': 'Mismatch',
+    })
+
+    assert message == 'Mismatch（bad style）'
 
 
 def test_settings_api_persists_and_resets_image_quality_control(client):
@@ -251,6 +262,28 @@ def test_quality_review_prompt_uses_generation_prompt_without_duplicate_context(
     assert 'Outline title:' not in captured['prompt']
     assert 'DUPLICATE OUTLINE TITLE' not in captured['prompt']
     assert 'DUPLICATE POINT' not in captured['prompt']
+
+
+def test_quality_review_prompt_preserves_zero_page_index(monkeypatch, tmp_path):
+    image_path = tmp_path / 'slide.png'
+    _image().save(image_path)
+    service = AIService.__new__(AIService)
+    captured = {}
+
+    def fake_generate_json_with_image(prompt, _image_path):
+        captured['prompt'] = prompt
+        return {'passed': True, 'issues': [], 'reason': 'Looks good'}
+
+    monkeypatch.setattr(service, 'generate_json_with_image', fake_generate_json_with_image)
+
+    service.review_generated_slide_image(
+        str(image_path),
+        generation_prompt='prompt',
+        page_desc='description',
+        page_index=0,
+    )
+
+    assert 'Page number: 0' in captured['prompt']
 
 
 @pytest.fixture(autouse=True)

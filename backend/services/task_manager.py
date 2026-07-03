@@ -78,6 +78,10 @@ def _format_quality_review_failure(review: Optional[dict]) -> str:
     if not review:
         return "质量控制未通过"
     issues = review.get('issues') or []
+    if isinstance(issues, str):
+        issues = [issues]
+    elif not isinstance(issues, list):
+        issues = []
     reason = (review.get('reason') or '').strip()
     details = "；".join(str(issue).strip() for issue in issues if str(issue).strip())
     if reason and details:
@@ -101,10 +105,11 @@ def review_image_quality(
     page_index: Optional[int] = None,
 ) -> dict:
     """Run the multimodal quality review on an unsaved generated image."""
-    with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
-        temp_path = tmp.name
+    temp_path = None
     converted_image = None
     try:
+        with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+            temp_path = tmp.name
         review_image = image
         if image.mode != 'RGB':
             converted_image = image.convert('RGB')
@@ -120,10 +125,11 @@ def review_image_quality(
     finally:
         if converted_image is not None:
             converted_image.close()
-        try:
-            os.remove(temp_path)
-        except OSError:
-            pass
+        if temp_path:
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
 
 
 def generate_image_until_quality_passes(
