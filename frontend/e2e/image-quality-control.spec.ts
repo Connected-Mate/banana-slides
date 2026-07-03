@@ -136,7 +136,7 @@ test.describe('image quality control setting', () => {
     await expect(page.locator('aside').getByRole('switch', { name: /质量控制|Quality Control/ })).toHaveCount(0);
     const qualitySwitch = page.locator('main').getByRole('switch', { name: /质量控制|Quality Control/ });
     const qualityTooltip = page.getByTestId('quality-control-tooltip');
-    await expect(qualityTooltip).toContainText(/多模态模型|multimodal reviewer/);
+    await expect(qualityTooltip).toContainText(/看不清的字|unreadable text/);
     await expect(qualityTooltip).toHaveCSS('opacity', '0');
     await qualitySwitch.hover();
     await expect(qualityTooltip).toHaveCSS('opacity', '1');
