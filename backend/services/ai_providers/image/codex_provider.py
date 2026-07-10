@@ -12,6 +12,7 @@ import base64
 import io
 import json
 import logging
+import os
 from io import BytesIO
 from typing import Optional, List
 
@@ -28,6 +29,39 @@ _CODEX_BASE_URL = "https://chatgpt.com/backend-api/codex"
 _RESPONSES_ENDPOINT = f"{_CODEX_BASE_URL}/responses"
 
 _DEFAULT_TIMEOUT = 180  # image generation can be slow
+
+# Outer Responses-API model that orchestrates the image_generation tool call.
+# Distinct from the image_generation tool's own `model` (e.g. gpt-image-2).
+# Override with CODEX_OUTER_MODEL if OpenAI rotates the subscription model name.
+_OUTER_MODEL = os.getenv('CODEX_OUTER_MODEL', 'gpt-5.5')
+
+# Client identifier sent to the backend. Matches the official Codex CLI.
+_ORIGINATOR = os.getenv('CODEX_ORIGINATOR', 'codex_cli_rs')
+
+_AUTH_CLAIM = "https://api.openai.com/auth"
+
+
+def _decode_jwt_payload(token: str) -> Optional[dict]:
+    """Decode a JWT's payload segment without verifying its signature (the backend does that)."""
+    try:
+        parts = token.split(".")
+        if len(parts) != 3:
+            return None
+        payload = parts[1]
+        padding = 4 - len(payload) % 4
+        if padding != 4:
+            payload += "=" * padding
+        return json.loads(base64.urlsafe_b64decode(payload))
+    except Exception:
+        return None
+
+
+def _account_id_from_token(access_token: str) -> Optional[str]:
+    """Extract the chatgpt_account_id claim used for the chatgpt-account-id header."""
+    claims = _decode_jwt_payload(access_token)
+    if not claims:
+        return None
+    return (claims.get(_AUTH_CLAIM) or {}).get("chatgpt_account_id")
 
 
 def _is_retryable_http_error(exc: BaseException) -> bool:
@@ -74,10 +108,16 @@ class CodexImageProvider(ImageProvider):
     # ------------------------------------------------------------------
 
     def _headers(self) -> dict:
-        return {
+        headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            "originator": _ORIGINATOR,
+            "Accept": "text/event-stream",
         }
+        account_id = _account_id_from_token(self.api_key)
+        if account_id:
+            headers["chatgpt-account-id"] = account_id
+        return headers
 
     def _build_payload(self, prompt: str, aspect_ratio: str, ref_images: Optional[List[Image.Image]] = None, quality: str = "high", resolution: Optional[str] = None) -> dict:
         """Build a Responses API request with image_generation tool."""
@@ -97,7 +137,7 @@ class CodexImageProvider(ImageProvider):
         content.append({"type": "input_text", "text": prompt})
 
         return {
-            "model": "gpt-5.4",
+            "model": _OUTER_MODEL,
             "instructions": "You are a helpful assistant that generates images.",
             "input": [{"role": "user", "content": content}],
             "tools": [
@@ -178,6 +218,12 @@ class CodexImageProvider(ImageProvider):
                 continue
 
             event_type = event.get("type", "")
+
+            # Backend-side failure — surface its message instead of hanging until stream end.
+            if event_type in ("response.failed", "error"):
+                err = (event.get("response") or {}).get("error") or event.get("error") or {}
+                message = (err or {}).get("message") or "unknown backend error"
+                raise ValueError(f"Codex backend error: {message}")
 
             # Direct image result in a delta or output item event
             if event_type in (

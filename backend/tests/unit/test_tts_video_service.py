@@ -504,7 +504,7 @@ class TestGenerateNarrationVideoPrerequisites:
     @patch.object(_tts_mod, 'check_ffmpeg_ass_filter_available', return_value=False)
     @patch.object(_tts_mod, 'check_ffmpeg_available', return_value=True)
     def test_fails_early_when_subtitles_required_but_ass_filter_missing(self, mock_ffmpeg, mock_ass):
-        with pytest.raises(RuntimeError, match='ASS 字幕烧录'):
+        with pytest.raises(RuntimeError, match='ASS subtitle burning'):
             _tts_mod.generate_narration_video(
                 pages_data=[{
                     'image_path': '/tmp/fake.png',

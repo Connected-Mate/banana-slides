@@ -5,7 +5,7 @@ const { app } = require('electron');
 const log = require('electron-log');
 const { isVersionLess, resolveCurrentBuildTimestamp, shouldNotifyUpdate } = require('./update-policy');
 
-const REPO_OWNER = 'Anionex';
+const REPO_OWNER = 'Connected-Mate';
 const REPO_NAME = 'banana-slides';
 const BUILD_META_PATH = path.join(__dirname, 'build-meta.json');
 

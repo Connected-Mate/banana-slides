@@ -186,23 +186,23 @@ def check_source_update(current: dict[str, Any]) -> dict[str, Any]:
     if not current_sha:
         status = "unknown"
         update_available = False
-        message = "无法确定当前源码版本。"
+        message = "Could not determine the current source version."
     elif not latest_sha:
         status = "unknown"
         update_available = False
-        message = "无法获取最新源码版本。"
+        message = "Could not fetch the latest source version."
     elif _shas_match(current_sha, latest_sha):
         status = "up_to_date"
         update_available = False
-        message = "当前源码版本已是最新。"
+        message = "The current source version is already up to date."
     elif _git_ancestor_status(latest_sha, current_sha) is True:
         status = "up_to_date"
         update_available = False
-        message = f"当前源码版本已包含最新 {SOURCE_BRANCH} 分支版本。"
+        message = f"The current source version already includes the latest {SOURCE_BRANCH} branch."
     else:
         status = "update_available"
         update_available = True
-        message = f"{SOURCE_BRANCH} 分支有新版本可用。"
+        message = f"A new version is available on the {SOURCE_BRANCH} branch."
 
     return {
         "status": status,

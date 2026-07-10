@@ -204,9 +204,9 @@ function createTray() {
   tray.setToolTip('Banana Slides');
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: '显示主窗口', click: () => { mainWindow?.show(); mainWindow?.focus(); } },
+    { label: 'Show Main Window', click: () => { mainWindow?.show(); mainWindow?.focus(); } },
     { type: 'separator' },
-    { label: '退出', click: () => { isQuitting = true; app.quit(); } },
+    { label: 'Quit', click: () => { isQuitting = true; app.quit(); } },
   ]);
   tray.setContextMenu(contextMenu);
   tray.on('double-click', () => { mainWindow?.show(); mainWindow?.focus(); });
@@ -218,78 +218,78 @@ function createAppMenu() {
     ...(isMac ? [{
       label: app.name,
       submenu: [
-        { label: '关于 Banana Slides', role: 'about' },
+        { label: 'About Banana Slides', role: 'about' },
         { type: 'separator' },
-        { label: '隐藏', role: 'hide' },
-        { label: '隐藏其他', role: 'hideOthers' },
-        { label: '全部显示', role: 'unhide' },
+        { label: 'Hide', role: 'hide' },
+        { label: 'Hide Others', role: 'hideOthers' },
+        { label: 'Show All', role: 'unhide' },
         { type: 'separator' },
-        { label: '退出', role: 'quit' },
+        { label: 'Quit', role: 'quit' },
       ],
     }] : []),
     {
-      label: '文件',
+      label: 'File',
       submenu: [
         ...(!isMac ? [
           { type: 'separator' },
-          { label: '退出', role: 'quit' },
+          { label: 'Quit', role: 'quit' },
         ] : [
-          { label: '关闭窗口', role: 'close' },
+          { label: 'Close Window', role: 'close' },
         ]),
       ],
     },
     {
-      label: '编辑',
+      label: 'Edit',
       submenu: [
-        { label: '撤销', role: 'undo' },
-        { label: '重做', role: 'redo' },
+        { label: 'Undo', role: 'undo' },
+        { label: 'Redo', role: 'redo' },
         { type: 'separator' },
-        { label: '剪切', role: 'cut' },
-        { label: '复制', role: 'copy' },
-        { label: '粘贴', role: 'paste' },
-        { label: '全选', role: 'selectAll' },
+        { label: 'Cut', role: 'cut' },
+        { label: 'Copy', role: 'copy' },
+        { label: 'Paste', role: 'paste' },
+        { label: 'Select All', role: 'selectAll' },
       ],
     },
     {
-      label: '视图',
+      label: 'View',
       submenu: [
-        { label: '放大', role: 'zoomIn', accelerator: 'CmdOrCtrl+=' },
-        { label: '缩小', role: 'zoomOut', accelerator: 'CmdOrCtrl+-' },
-        { label: '重置缩放', role: 'resetZoom', accelerator: 'CmdOrCtrl+0' },
+        { label: 'Zoom In', role: 'zoomIn', accelerator: 'CmdOrCtrl+=' },
+        { label: 'Zoom Out', role: 'zoomOut', accelerator: 'CmdOrCtrl+-' },
+        { label: 'Reset Zoom', role: 'resetZoom', accelerator: 'CmdOrCtrl+0' },
         { type: 'separator' },
-        { label: '全屏', role: 'togglefullscreen' },
+        { label: 'Toggle Full Screen', role: 'togglefullscreen' },
         { type: 'separator' },
-        { label: '重新加载', role: 'reload' },
-        { label: '强制重新加载', role: 'forceReload' },
-        { label: '开发者工具', role: 'toggleDevTools' },
+        { label: 'Reload', role: 'reload' },
+        { label: 'Force Reload', role: 'forceReload' },
+        { label: 'Developer Tools', role: 'toggleDevTools' },
       ],
     },
     {
-      label: '窗口',
+      label: 'Window',
       submenu: [
-        { label: '最小化', role: 'minimize' },
+        { label: 'Minimize', role: 'minimize' },
         ...(isMac ? [
           { type: 'separator' },
-          { label: '前置全部窗口', role: 'front' },
+          { label: 'Bring All to Front', role: 'front' },
         ] : [
-          { label: '关闭', role: 'close' },
+          { label: 'Close', role: 'close' },
         ]),
       ],
     },
     {
-      label: '帮助',
+      label: 'Help',
       submenu: [
         {
-          label: '检查更新...',
+          label: 'Check for Updates...',
           click: async () => {
             const update = await autoUpdater.checkForUpdates();
             if (update) {
               const result = await dialog.showMessageBox(mainWindow, {
                 type: 'info',
-                title: '发现新版本',
-                message: `新版本 v${update.version} 可用`,
+                title: 'Update Available',
+                message: `Version v${update.version} is available`,
                 detail: update.notes.substring(0, 300),
-                buttons: ['前往下载', '稍后'],
+                buttons: ['Download', 'Later'],
               });
               if (result.response === 0) {
                 shell.openExternal(update.url);
@@ -297,19 +297,19 @@ function createAppMenu() {
             } else {
               dialog.showMessageBox(mainWindow, {
                 type: 'info',
-                title: '检查更新',
-                message: '当前已是最新版本',
+                title: 'Check for Updates',
+                message: 'You are on the latest version',
               });
             }
           },
         },
         { type: 'separator' },
         {
-          label: '关于',
+          label: 'About',
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
-              title: '关于 Banana Slides',
+              title: 'About Banana Slides',
               message: `Banana Slides v${app.getVersion()}`,
               detail: 'AI-Native Presentation Generator',
             });
@@ -370,7 +370,7 @@ function setupIPC() {
     const downloadUrl = createUniqueDownloadUrl(url);
     const { filePath: savePath, canceled } = await dialog.showSaveDialog(currentWindow, {
       defaultPath: filename || 'download',
-      filters: [{ name: '所有文件', extensions: [ext, '*'] }],
+      filters: [{ name: 'All Files', extensions: [ext, '*'] }],
     });
     if (canceled || !savePath) return { success: false, canceled: true };
     if (currentWindow.isDestroyed()) return { success: false };
@@ -426,7 +426,7 @@ async function bootstrap() {
   } catch (err) {
     log.error('[main] Startup failed:', err);
     if (splashWindow) splashWindow.close();
-    dialog.showErrorBox('启动失败', `后端服务启动失败：${err.message}`);
+    dialog.showErrorBox('Startup Failed', `Backend service failed to start: ${err.message}`);
     app.quit();
   }
 }

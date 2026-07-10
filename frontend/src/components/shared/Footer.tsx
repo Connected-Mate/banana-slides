@@ -10,6 +10,7 @@ export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const { i18n } = useTranslation();
   const docsLabel = i18n.language?.startsWith('zh') ? '文档' : 'Docs';
+  const brandLabel = i18n.language?.startsWith('zh') ? '蕉幻 Banana Slides' : 'Banana Slides';
 
   return (
     <footer className="relative w-full py-6 px-4 mt-auto">
@@ -19,7 +20,7 @@ export const Footer: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <span>© {currentYear}</span>
             <span className="font-medium bg-gradient-to-r from-banana-600 to-orange-500 bg-clip-text text-transparent">
-              蕉幻 Banana Slides
+              {brandLabel}
             </span>
           </div>
 

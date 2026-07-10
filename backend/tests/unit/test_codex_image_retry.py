@@ -172,3 +172,84 @@ class TestGenerateImageRetry:
             result = _provider().generate_image("a blue square")
             assert result is not None
             assert mock_post.call_count == 2
+
+
+# ---------------------------------------------------------------------------
+# JWT helper for chatgpt-account-id header tests
+# ---------------------------------------------------------------------------
+
+def _make_jwt(payload: dict) -> str:
+    import base64 as _b64
+    import json as _json
+
+    def _b64url(data: bytes) -> str:
+        return _b64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+    header = _b64url(b'{"alg":"none","typ":"JWT"}')
+    body = _b64url(_json.dumps(payload).encode())
+    return f"{header}.{body}.sig"
+
+
+class TestCodexHeaders:
+
+    def test_headers_include_originator_and_accept(self):
+        headers = _provider()._headers()
+        assert headers["originator"] == "codex_cli_rs"
+        assert headers["Accept"] == "text/event-stream"
+        assert headers["Authorization"] == "Bearer test-token"
+
+    def test_headers_omit_account_id_for_non_jwt_token(self):
+        headers = _provider()._headers()
+        assert "chatgpt-account-id" not in headers
+
+    def test_headers_include_account_id_from_jwt_claim(self):
+        token = _make_jwt({"https://api.openai.com/auth": {"chatgpt_account_id": "acct_123"}})
+        provider = CodexImageProvider(api_key=token, model="gpt-image-2")
+        headers = provider._headers()
+        assert headers["chatgpt-account-id"] == "acct_123"
+
+    def test_account_id_from_token_missing_claim_returns_none(self):
+        token = _make_jwt({"sub": "user-1"})
+        assert _codex_img._account_id_from_token(token) is None
+
+
+class TestCodexOuterModel:
+
+    def test_build_payload_uses_gpt_5_5_outer_model(self):
+        payload = _provider()._build_payload("a prompt", "16:9")
+        assert payload["model"] == "gpt-5.5"
+        # inner tool model stays the actual image model, not the outer one
+        assert payload["tools"][0]["model"] == "gpt-image-1"
+
+
+class TestCodexSSEFailure:
+
+    def _resp_with_events(self, *events):
+        import json as _json
+        resp = MagicMock(spec=requests.Response)
+        resp.status_code = 200
+        resp.raise_for_status = MagicMock()
+        lines = [f"data: {_json.dumps(e)}".encode() for e in events] + [b"data: [DONE]"]
+        resp.iter_lines.return_value = lines
+        return resp
+
+    def test_response_failed_event_raises_with_backend_message(self):
+        resp = self._resp_with_events({
+            "type": "response.failed",
+            "response": {"error": {"message": "content policy violation"}},
+        })
+        with pytest.raises(ValueError, match="content policy violation"):
+            _provider()._parse_sse_for_image(resp)
+
+    def test_error_event_raises_with_backend_message(self):
+        resp = self._resp_with_events({
+            "type": "error",
+            "error": {"message": "rate limited by plan"},
+        })
+        with pytest.raises(ValueError, match="rate limited by plan"):
+            _provider()._parse_sse_for_image(resp)
+
+    def test_failure_event_without_message_uses_fallback(self):
+        resp = self._resp_with_events({"type": "response.failed", "response": {}})
+        with pytest.raises(ValueError, match="unknown backend error"):
+            _provider()._parse_sse_for_image(resp)

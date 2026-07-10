@@ -1,7 +1,14 @@
 """Settings model"""
 import json
-from datetime import datetime, timezone
+import logging
+from datetime import datetime, timedelta, timezone
 from . import db
+
+logger = logging.getLogger(__name__)
+
+# Refresh proactively this far ahead of the actual expiry, so a token that's
+# about to expire isn't handed to an in-flight request.
+_OAUTH_EXPIRY_MARGIN = timedelta(seconds=60)
 
 
 def _utcnow_naive():
@@ -257,7 +264,7 @@ class Settings(db.Model):
             return None
         if self.openai_oauth_expires_at:
             now = _utcnow_naive()
-            if self.openai_oauth_expires_at < now:
+            if self.openai_oauth_expires_at < now + _OAUTH_EXPIRY_MARGIN:
                 if self.openai_oauth_refresh_token:
                     return self._refresh_openai_oauth()
                 return None
@@ -306,6 +313,7 @@ class Settings(db.Model):
             return self.openai_oauth_access_token
         except requests.exceptions.HTTPError as exc:
             status_code = getattr(getattr(exc, 'response', None), 'status_code', None)
+            logger.warning("OpenAI OAuth token refresh failed (HTTP %s): %s", status_code, exc)
             if status_code in (400, 401):
                 self.clear_openai_oauth()
                 try:
@@ -313,7 +321,8 @@ class Settings(db.Model):
                 except Exception:
                     db.session.rollback()
             return None
-        except Exception:
+        except Exception as exc:
+            logger.warning("OpenAI OAuth token refresh failed: %s", exc)
             return None
 
     @staticmethod

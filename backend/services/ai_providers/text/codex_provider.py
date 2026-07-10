@@ -7,9 +7,11 @@ Auth:     Bearer <oauth_access_token>
 This provider converts prompts into the Responses API format (not Chat
 Completions) and supports both streaming and non-streaming generation.
 """
+import base64
 import json
 import logging
-from typing import Generator
+import os
+from typing import Generator, Optional
 
 import requests as http_requests
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
@@ -23,6 +25,38 @@ _RESPONSES_ENDPOINT = f"{_CODEX_BASE_URL}/responses"
 
 # Default timeout for HTTP requests (seconds)
 _DEFAULT_TIMEOUT = 120
+
+# Default model when none is passed explicitly. Override with CODEX_TEXT_MODEL
+# if OpenAI rotates the subscription model name.
+_DEFAULT_MODEL = os.getenv('CODEX_TEXT_MODEL', 'gpt-5.5')
+
+# Client identifier sent to the backend. Matches the official Codex CLI.
+_ORIGINATOR = os.getenv('CODEX_ORIGINATOR', 'codex_cli_rs')
+
+_AUTH_CLAIM = "https://api.openai.com/auth"
+
+
+def _decode_jwt_payload(token: str) -> Optional[dict]:
+    """Decode a JWT's payload segment without verifying its signature (the backend does that)."""
+    try:
+        parts = token.split(".")
+        if len(parts) != 3:
+            return None
+        payload = parts[1]
+        padding = 4 - len(payload) % 4
+        if padding != 4:
+            payload += "=" * padding
+        return json.loads(base64.urlsafe_b64decode(payload))
+    except Exception:
+        return None
+
+
+def _account_id_from_token(access_token: str) -> Optional[str]:
+    """Extract the chatgpt_account_id claim used for the chatgpt-account-id header."""
+    claims = _decode_jwt_payload(access_token)
+    if not claims:
+        return None
+    return (claims.get(_AUTH_CLAIM) or {}).get("chatgpt_account_id")
 
 
 def _is_retryable_http_error(exc: BaseException) -> bool:
@@ -52,11 +86,11 @@ def _log_codex_retry(retry_state):
 class CodexTextProvider(TextProvider):
     """Text generation via the ChatGPT Codex Responses API (OAuth)."""
 
-    def __init__(self, api_key: str, model: str = "gpt-4.1-mini"):
+    def __init__(self, api_key: str, model: str = _DEFAULT_MODEL):
         """
         Args:
             api_key: OAuth access token obtained via PKCE flow.
-            model:   Model name (e.g. gpt-4.1, gpt-4.1-mini, o4-mini).
+            model:   Model name (e.g. gpt-5.5, gpt-5.4-mini).
         """
         self.api_key = api_key
         self.model = model
@@ -66,10 +100,16 @@ class CodexTextProvider(TextProvider):
     # ------------------------------------------------------------------
 
     def _headers(self) -> dict:
-        return {
+        headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            "originator": _ORIGINATOR,
+            "Accept": "text/event-stream",
         }
+        account_id = _account_id_from_token(self.api_key)
+        if account_id:
+            headers["chatgpt-account-id"] = account_id
+        return headers
 
     def _build_payload(self, prompt: str) -> dict:
         """Build a Responses API request body. Stream is always true (required by Codex)."""
@@ -171,7 +211,15 @@ class CodexTextProvider(TextProvider):
             except json.JSONDecodeError:
                 continue
 
-            if event.get("type") == "response.output_text.delta":
+            event_type = event.get("type", "")
+
+            # Backend-side failure — surface its message instead of hanging until stream end.
+            if event_type in ("response.failed", "error"):
+                err = (event.get("response") or {}).get("error") or event.get("error") or {}
+                message = (err or {}).get("message") or "unknown backend error"
+                raise ValueError(f"Codex backend error: {message}")
+
+            if event_type == "response.output_text.delta":
                 delta = event.get("delta", "")
                 if delta:
                     yield delta

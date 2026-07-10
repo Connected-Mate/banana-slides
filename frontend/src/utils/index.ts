@@ -94,7 +94,7 @@ export function downloadFromUrl(url: string, filename?: string) {
  */
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  const lang = localStorage.getItem('i18nextLng') || navigator.language || 'zh-CN';
+  const lang = localStorage.getItem('i18nextLng') || navigator.language || 'en-US';
   const locale = lang.startsWith('zh') ? 'zh-CN' : 'en-US';
   return date.toLocaleString(locale, {
     year: 'numeric',
@@ -116,7 +116,7 @@ export function generateId(): string {
  * 将错误消息转换为友好的中英文提示
  */
 export function normalizeErrorMessage(errorMessage: string | null | undefined): string {
-  const lang = localStorage.getItem('i18nextLng') || navigator.language || 'zh';
+  const lang = localStorage.getItem('i18nextLng') || navigator.language || 'en';
   const isZh = lang.startsWith('zh');
 
   if (!errorMessage) return isZh ? '操作失败' : 'Operation failed';

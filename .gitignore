@@ -42,6 +42,8 @@
 # 忽略临时文档，但保留项目文档
 *.md
 !README.md
+!README_ZH.md
+!README_EN.md
 !skills/**/*.md
 # !docs/**/*.md
 !docs/specs/cli-spec.md

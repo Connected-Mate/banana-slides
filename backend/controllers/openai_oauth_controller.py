@@ -70,7 +70,7 @@ def _token_exchange_error_message(error: Exception) -> str:
             text = getattr(response, "text", "")
             detail = text.strip() if isinstance(text, str) and text.strip() else None
 
-    message = "Token exchange failed，请检查部署机器或容器是否可以访问 OpenAI"
+    message = "Token exchange failed. Please check whether the deployment machine or container can reach OpenAI."
     return f"{message}: {detail}" if detail else message
 
 
@@ -146,7 +146,7 @@ def list_models():
     settings = Settings.get_settings()
     token = settings.get_openai_oauth_token()
     if not token:
-        return error_response("OPENAI_OAUTH_NOT_CONNECTED", "OpenAI 账号未连接", 401)
+        return error_response("OPENAI_OAUTH_NOT_CONNECTED", "OpenAI account not connected", 401)
 
     text_models = [
         "gpt-5.5",
@@ -201,15 +201,15 @@ def manual_callback():
     error_param = params.get("error", [None])[0]
 
     if error_param:
-        return error_response("OPENAI_OAUTH_ERROR", f"OpenAI 登录失败: {error_param}", 400)
+        return error_response("OPENAI_OAUTH_ERROR", f"OpenAI login failed: {error_param}", 400)
     if not code or not state:
-        return error_response("INVALID_REQUEST", "回调地址缺少 code 或 state 参数", 400)
+        return error_response("INVALID_REQUEST", "Callback URL is missing the code or state parameter", 400)
 
     result = _exchange_and_store(
         code,
         state,
         current_app._get_current_object(),
-        missing_message="登录会话已过期或已使用，请重新点击登录后粘贴新的 URL",
+        missing_message="The login session has expired or was already used. Click Sign in again, then paste the new URL.",
     )
     if not result["success"]:
         return error_response(result["error_code"], result["message"], result["status_code"])
@@ -267,7 +267,7 @@ def _exchange_and_store(
             return {
                 "success": False,
                 "error_code": "OPENAI_OAUTH_TOKEN_EXCHANGE_FAILED",
-                "message": "OpenAI token 响应格式无效",
+                "message": "Invalid OpenAI token response format",
                 "status_code": 500,
             }
     except http_requests.RequestException as e:
@@ -283,7 +283,7 @@ def _exchange_and_store(
         return {
             "success": False,
             "error_code": "OPENAI_OAUTH_TOKEN_EXCHANGE_FAILED",
-            "message": "Token exchange failed，请检查部署机器或容器是否可以访问 OpenAI",
+            "message": "Token exchange failed. Please check whether the deployment machine or container can reach OpenAI.",
             "status_code": 500,
         }
 
@@ -296,7 +296,7 @@ def _exchange_and_store(
         return {
             "success": False,
             "error_code": "OPENAI_OAUTH_TOKEN_EXCHANGE_FAILED",
-            "message": "OpenAI token 响应缺少 access_token",
+            "message": "OpenAI token response is missing access_token",
             "status_code": 500,
         }
 
@@ -314,7 +314,7 @@ def _exchange_and_store(
             return {
                 "success": False,
                 "error_code": "OPENAI_OAUTH_TOKEN_STORE_FAILED",
-                "message": "保存 OpenAI 登录凭据失败",
+                "message": "Failed to store OpenAI login credentials",
                 "status_code": 500,
             }
 

@@ -97,7 +97,7 @@ def test_failed_auto_callback_keeps_state_for_manual_retry(client, app):
             result = openai_oauth_controller._exchange_and_store("auth-code", state)
 
         assert result["success"] is False
-        assert result["message"] == "Token exchange failed，请检查部署机器或容器是否可以访问 OpenAI"
+        assert result["message"] == "Token exchange failed. Please check whether the deployment machine or container can reach OpenAI."
         assert state in openai_oauth_controller._pending_flows
 
         with patch(
@@ -112,7 +112,7 @@ def test_failed_auto_callback_keeps_state_for_manual_retry(client, app):
         assert failed_response.status_code == 500
         failed_data = failed_response.get_json()
         assert failed_data["error"]["code"] == "OPENAI_OAUTH_TOKEN_EXCHANGE_FAILED"
-        assert failed_data["error"]["message"] == "Token exchange failed，请检查部署机器或容器是否可以访问 OpenAI"
+        assert failed_data["error"]["message"] == "Token exchange failed. Please check whether the deployment machine or container can reach OpenAI."
         assert state in openai_oauth_controller._pending_flows
 
         with patch(
@@ -209,7 +209,7 @@ def test_token_exchange_requires_access_token_and_keeps_state(app):
 
         assert result["success"] is False
         assert result["error_code"] == "OPENAI_OAUTH_TOKEN_EXCHANGE_FAILED"
-        assert result["message"] == "OpenAI token 响应缺少 access_token"
+        assert result["message"] == "OpenAI token response is missing access_token"
         assert state in openai_oauth_controller._pending_flows
     finally:
         openai_oauth_controller._pending_flows.clear()
@@ -231,7 +231,7 @@ def test_token_exchange_rejects_non_object_response_and_keeps_state(app):
             result = openai_oauth_controller._exchange_and_store("auth-code", state)
 
         assert result["success"] is False
-        assert result["message"] == "OpenAI token 响应格式无效"
+        assert result["message"] == "Invalid OpenAI token response format"
         assert state in openai_oauth_controller._pending_flows
     finally:
         openai_oauth_controller._pending_flows.clear()

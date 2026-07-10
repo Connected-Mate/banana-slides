@@ -499,7 +499,7 @@ def get_elevenlabs_voices():
     settings = Settings.get_settings()
     api_key = settings.elevenlabs_api_key
     if not api_key:
-        return error_response("ELEVENLABS_KEY_MISSING", "ElevenLabs API Key 未配置", 400)
+        return error_response("ELEVENLABS_KEY_MISSING", "ElevenLabs API Key not configured", 400)
     try:
         from elevenlabs.client import ElevenLabs
         from elevenlabs.core import ApiError as ElevenLabsApiError
@@ -514,12 +514,12 @@ def get_elevenlabs_voices():
             if status == 'missing_permissions':
                 return error_response(
                     "ELEVENLABS_KEY_MISSING_PERMISSION",
-                    "ElevenLabs API Key 缺少 voices_read 权限。请到 ElevenLabs Dashboard 编辑该 Key 并勾选 Voices: Read，或创建 'Has access to all' 的 Key 后重新保存。",
+                    "ElevenLabs API Key is missing the voices_read permission. Edit the key in the ElevenLabs Dashboard and enable Voices: Read, or create a key with 'Has access to all' and save it again.",
                     400,
                 )
             if status == 'invalid_api_key' or e.status_code == 401:
-                return error_response("ELEVENLABS_KEY_INVALID", f"ElevenLabs API Key 无效：{msg}", 400)
-            return error_response("ELEVENLABS_VOICES_ERROR", f"ElevenLabs 错误 (HTTP {e.status_code})：{msg}", 500)
+                return error_response("ELEVENLABS_KEY_INVALID", f"Invalid ElevenLabs API Key: {msg}", 400)
+            return error_response("ELEVENLABS_VOICES_ERROR", f"ElevenLabs error (HTTP {e.status_code}): {msg}", 500)
         voices = []
         for v in voices_response.voices:
             labels = getattr(v, "labels", None) or {}
@@ -546,7 +546,7 @@ def get_elevenlabs_voices():
         return success_response({"voices": voices})
     except Exception as e:
         logger.exception("[elevenlabs-voices] 获取声音列表失败")
-        return error_response("ELEVENLABS_VOICES_ERROR", f"获取 ElevenLabs 声音列表失败: {e}", 500)
+        return error_response("ELEVENLABS_VOICES_ERROR", f"Failed to fetch ElevenLabs voice list: {e}", 500)
 
 
 @settings_bp.route("/active-config", methods=["GET"], strict_slashes=False)
@@ -585,7 +585,7 @@ def verify_api_key():
         if not settings:
             return success_response({
                 "available": False,
-                "message": "用户设置未找到"
+                "message": "User settings not found"
             })
 
         # 准备设置覆盖字典
@@ -619,7 +619,7 @@ def verify_api_key():
                 logger.info("API key verification successful")
                 return success_response({
                     "available": True,
-                    "message": "API key 可用"
+                    "message": "API key is valid"
                 })
 
             except ValueError as ve:
@@ -629,9 +629,9 @@ def verify_api_key():
                 if provider_format == "lazyllm" or provider_format in LAZYLLM_VENDORS:
                     source = (provider_format if provider_format in LAZYLLM_VENDORS
                               else current_app.config.get("TEXT_MODEL_SOURCE") or Config.TEXT_MODEL_SOURCE or "unknown").upper()
-                    message = f"LazyLLM API key 未配置，请设置 {source}_API_KEY"
+                    message = f"LazyLLM API key not configured. Please set {source}_API_KEY"
                 else:
-                    message = "API key 未配置，请在设置中配置 API key 和 API Base URL"
+                    message = "API key not configured. Please configure the API key and API Base URL in Settings"
                 return success_response({
                     "available": False,
                     "message": message
@@ -643,15 +643,15 @@ def verify_api_key():
 
                 # 根据错误信息判断具体原因
                 if "401" in error_msg or "unauthorized" in error_msg.lower() or "invalid" in error_msg.lower():
-                    message = "API key 无效或已过期，请在设置中检查 API key 配置"
+                    message = "API key is invalid or expired. Please check the API key configuration in Settings"
                 elif "429" in error_msg or "quota" in error_msg.lower() or "limit" in error_msg.lower():
-                    message = "API 调用超限或余额不足，请在设置中检查配置"
+                    message = "API rate limit exceeded or insufficient balance. Please check the configuration in Settings"
                 elif "403" in error_msg or "forbidden" in error_msg.lower():
-                    message = "API 访问被拒绝，请在设置中检查 API key 权限"
+                    message = "API access denied. Please check the API key permissions in Settings"
                 elif "timeout" in error_msg.lower():
-                    message = "API 调用超时，请在设置中检查网络连接和 API Base URL"
+                    message = "API call timed out. Please check the network connection and API Base URL in Settings"
                 else:
-                    message = f"API 调用失败，请在设置中检查配置: {error_msg}"
+                    message = f"API call failed. Please check the configuration in Settings: {error_msg}"
 
                 return success_response({
                     "available": False,
@@ -662,7 +662,7 @@ def verify_api_key():
         logger.error(f"Error verifying API key: {str(e)}")
         return error_response(
             "VERIFY_API_KEY_ERROR",
-            f"验证 API key 时出错: {str(e)}",
+            f"Error verifying API key: {str(e)}",
             500,
         )
 
@@ -1168,7 +1168,7 @@ def _run_test_async(task_id: str, test_name: str, test_settings: dict, app):
                 progress = {}
                 if _is_codex_oauth_unauthorized(e, test_name, test_settings):
                     _disconnect_expired_openai_oauth()
-                    error_msg = "Codex 登录已过期或无效，已断开 OpenAI 账号连接。请重新登录 OpenAI 后再测试。"
+                    error_msg = "Codex login expired or invalid; the OpenAI account connection was disconnected. Please log in to OpenAI again before retesting."
                     progress = {
                         "openai_oauth_disconnected": True,
                         "message": error_msg,
@@ -1278,13 +1278,13 @@ def run_settings_test(test_name: str):
         return success_response({
             'task_id': task_id,
             'status': 'PENDING'
-        }, '测试任务已启动')
+        }, 'Test task started')
 
     except Exception as e:
         logger.error(f"Failed to start test: {str(e)}", exc_info=True)
         return error_response(
             "SETTINGS_TEST_ERROR",
-            f"启动测试失败: {str(e)}",
+            f"Failed to start test: {str(e)}",
             500
         )
 
@@ -1307,7 +1307,7 @@ def get_test_status(task_id: str):
     try:
         task = Task.query.get(task_id)
         if not task:
-            return error_response("TASK_NOT_FOUND", "测试任务不存在", 404)
+            return error_response("TASK_NOT_FOUND", "Test task not found", 404)
 
         # 构建响应数据
         response_data = {
@@ -1321,7 +1321,7 @@ def get_test_status(task_id: str):
         if task.status == 'COMPLETED':
             progress = task.get_progress()
             response_data['result'] = progress.get('result', {})
-            response_data['message'] = progress.get('message', '测试完成')
+            response_data['message'] = progress.get('message', 'Test completed')
 
         # 如果任务失败，包含错误信息
         elif task.status == 'FAILED':
@@ -1336,6 +1336,6 @@ def get_test_status(task_id: str):
         logger.error(f"Failed to get test status: {str(e)}", exc_info=True)
         return error_response(
             "GET_TEST_STATUS_ERROR",
-            f"获取测试状态失败: {str(e)}",
+            f"Failed to get test status: {str(e)}",
             500
         )

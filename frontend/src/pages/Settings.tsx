@@ -421,6 +421,13 @@ interface ServiceTestState {
   detail?: string;
 }
 
+// ChatGPT-first defaults: once the user connects an OpenAI account and no provider
+// has been explicitly configured yet, switch straight to Codex + these models.
+const CODEX_DEFAULT_TEXT_MODEL = 'gpt-5.5';
+const CODEX_DEFAULT_IMAGE_MODEL = 'gpt-image-2';
+const GEMINI_DEFAULT_TEXT_MODEL = 'gemini-3-flash-preview';
+const GEMINI_DEFAULT_IMAGE_MODEL = 'gemini-3-pro-image-preview';
+
 const AIHUBMIX_AFFILIATE_URL = ['https://', 'aihubmix', '.com/?', 'aff=17EC'].join('');
 const VOLCENGINE_AGENTPLANS_CN_URL = 'https://www.volcengine.com/activity/ai618?utm_campaign=hw&utm_content=hw&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides';
 const VOLCENGINE_AGENTPLANS_EN_URL = 'https://www.byteplus.com/en/product/modelark?utm_campaign=hw&utm_content=banana-slides&utm_medium=devrel_tool_web&utm_source=OWO&utm_term=banana-slides';
@@ -756,6 +763,39 @@ export const Settings: React.FC = () => {
       ? 'settings.doubaoKeyHelp'
       : 'settings.apiKeyHelp';
 
+  // If the provider is still on the untouched gemini default (or blank), switch to
+  // Codex + gpt-5.5/gpt-image-2 now that the user has connected a ChatGPT account.
+  // Leaves any explicitly configured provider/model alone.
+  const applyCodexDefaultsIfUntouched = async () => {
+    try {
+      const fresh = await api.getSettings();
+      const s = fresh.data;
+      if (!s) return;
+      const stillDefault = s.ai_provider_format === 'gemini'
+        && (!s.text_model || s.text_model === GEMINI_DEFAULT_TEXT_MODEL)
+        && (!s.image_model || s.image_model === GEMINI_DEFAULT_IMAGE_MODEL);
+      if (!stillDefault) return;
+
+      const resp = await api.updateSettings({
+        ai_provider_format: 'codex',
+        text_model: CODEX_DEFAULT_TEXT_MODEL,
+        image_model: CODEX_DEFAULT_IMAGE_MODEL,
+      });
+      if (resp.data) {
+        setSettings(prev => prev ? { ...prev, ...resp.data } : resp.data!);
+        setFormData(prev => ({
+          ...prev,
+          ai_provider_format: 'codex',
+          text_model: CODEX_DEFAULT_TEXT_MODEL,
+          image_model: CODEX_DEFAULT_IMAGE_MODEL,
+        }));
+        show({ message: 'ChatGPT connected — default models set to gpt-5.5 (text) / gpt-image-2 (image)', type: 'success' });
+      }
+    } catch (error) {
+      console.error('Failed to apply Codex defaults after OAuth connect:', error);
+    }
+  };
+
   const handleOAuthLogin = async () => {
     setOauthConnecting(true);
     try {
@@ -778,6 +818,9 @@ export const Settings: React.FC = () => {
           openai_oauth_connected: statusResp.data!.connected,
           openai_oauth_account_id: statusResp.data!.account_id || null,
         } : prev);
+        if (statusResp.data.connected) {
+          await applyCodexDefaultsIfUntouched();
+        }
       }
             } else {
               show({ message: t('settings.openaiOAuth.connectFailed'), type: 'error' });
@@ -830,6 +873,9 @@ export const Settings: React.FC = () => {
             openai_oauth_connected: statusResp.data!.connected,
             openai_oauth_account_id: statusResp.data!.account_id || null,
           } : prev);
+          if (statusResp.data.connected) {
+            await applyCodexDefaultsIfUntouched();
+          }
         }
         show({ message: t('settings.openaiOAuth.manualCallbackSuccess'), type: 'success' });
       } else {

@@ -13,13 +13,16 @@ i18n
       zh: { translation: zh },
       en: { translation: en },
     },
-    fallbackLng: 'zh',
+    fallbackLng: 'en',
     debug: false,
     interpolation: {
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      // English by default for new users, even on a zh/ja/etc browser locale.
+      // Only an explicit choice (persisted below) switches the language;
+      // browser-locale auto-detection is intentionally not used.
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: 'banana-slides-language',
     },

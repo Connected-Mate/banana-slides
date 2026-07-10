@@ -423,7 +423,7 @@ def test_codex_401_settings_test_disconnects_oauth_and_reports_state(client, app
     assert data['success'] is True
     assert data['data']['status'] == 'FAILED'
     assert data['data']['openai_oauth_disconnected'] is True
-    assert '重新登录 OpenAI' in data['data']['error']
+    assert 'log in to OpenAI again' in data['data']['error']
 
 
 @pytest.mark.parametrize(
@@ -483,7 +483,7 @@ def test_codex_oauth_not_connected_settings_test_disconnects_oauth_and_reports_s
     assert data['success'] is True
     assert data['data']['status'] == 'FAILED'
     assert data['data']['openai_oauth_disconnected'] is True
-    assert '重新登录 OpenAI' in data['data']['error']
+    assert 'log in to OpenAI again' in data['data']['error']
 
 
 def test_non_codex_oauth_not_connected_error_does_not_disconnect_codex_oauth(client, app):
@@ -620,3 +620,135 @@ def test_codex_test_error_text_with_4010_does_not_disconnect_oauth(client, app):
     data = status_response.get_json()
     assert data['data']['status'] == 'FAILED'
     assert 'openai_oauth_disconnected' not in data['data']
+
+
+def test_codex_text_provider_substitutes_stale_gemini_model():
+    """A leftover Gemini text model under format=codex should fall back to gpt-5.5."""
+    app = Flask(__name__)
+    app.config.update(AI_PROVIDER_FORMAT='codex')
+
+    with app.app_context():
+        with patch('services.ai_providers._get_openai_oauth_token', return_value='oauth-token'):
+            with patch('services.ai_providers.CodexTextProvider') as provider_cls:
+                provider = ai_providers.get_text_provider(model='gemini-3-flash-preview')
+
+    assert provider == provider_cls.return_value
+    provider_cls.assert_called_once_with(api_key='oauth-token', model='gpt-5.5')
+
+
+def test_codex_image_provider_substitutes_stale_gemini_model():
+    """A leftover Gemini image model under format=codex should fall back to gpt-image-2."""
+    app = Flask(__name__)
+    app.config.update(AI_PROVIDER_FORMAT='codex', DEFAULT_RESOLUTION='2K')
+
+    with app.app_context():
+        with patch('services.ai_providers._get_openai_oauth_token', return_value='oauth-token'):
+            with patch('services.ai_providers.CodexImageProvider') as provider_cls:
+                provider = ai_providers.get_image_provider(model='gemini-3-pro-image-preview')
+
+    assert provider == provider_cls.return_value
+    provider_cls.assert_called_once_with(api_key='oauth-token', model='gpt-image-2', resolution='2K')
+
+
+def test_codex_text_provider_keeps_explicit_non_gemini_model():
+    """A genuine ChatGPT model name for Codex must pass through untouched."""
+    app = Flask(__name__)
+    app.config.update(AI_PROVIDER_FORMAT='codex')
+
+    with app.app_context():
+        with patch('services.ai_providers._get_openai_oauth_token', return_value='oauth-token'):
+            with patch('services.ai_providers.CodexTextProvider') as provider_cls:
+                ai_providers.get_text_provider(model='gpt-5.4-mini')
+
+    provider_cls.assert_called_once_with(api_key='oauth-token', model='gpt-5.4-mini')
+
+
+def test_get_openai_oauth_token_refreshes_within_60s_margin(client, app):
+    """A token expiring in <60s should be refreshed proactively, not handed out as-is."""
+    with app.app_context():
+        from datetime import timedelta
+        from models import Settings, db
+        from models.settings import _utcnow_naive
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = 'stale-access-token'
+        settings.openai_oauth_refresh_token = 'refresh-token'
+        settings.openai_oauth_expires_at = _utcnow_naive() + timedelta(seconds=30)
+        db.session.commit()
+
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status = MagicMock()
+        mock_resp.json.return_value = {'access_token': 'refreshed-token', 'expires_in': 3600}
+        with patch('requests.post', return_value=mock_resp) as mock_post:
+            token = settings.get_openai_oauth_token()
+
+        assert token == 'refreshed-token'
+        mock_post.assert_called_once()
+
+
+def test_get_openai_oauth_token_returns_as_is_when_outside_margin(client, app):
+    """A token with plenty of time left should be returned without refreshing."""
+    with app.app_context():
+        from datetime import timedelta
+        from models import Settings, db
+        from models.settings import _utcnow_naive
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = 'still-fresh-token'
+        settings.openai_oauth_refresh_token = 'refresh-token'
+        settings.openai_oauth_expires_at = _utcnow_naive() + timedelta(minutes=30)
+        db.session.commit()
+
+        with patch('requests.post') as mock_post:
+            token = settings.get_openai_oauth_token()
+
+        assert token == 'still-fresh-token'
+        mock_post.assert_not_called()
+
+
+def test_refresh_network_error_logs_warning(client, app, caplog):
+    """A failed OAuth refresh (network error) should log a warning instead of failing silently."""
+    with app.app_context():
+        import logging
+        from datetime import timedelta
+        from models import Settings, db
+        from models.settings import _utcnow_naive
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = 'expired-token'
+        settings.openai_oauth_refresh_token = 'refresh-token'
+        settings.openai_oauth_expires_at = _utcnow_naive() - timedelta(seconds=5)
+        db.session.commit()
+
+        with patch('requests.post', side_effect=requests.exceptions.ConnectionError('network down')):
+            with caplog.at_level(logging.WARNING, logger='models.settings'):
+                token = settings.get_openai_oauth_token()
+
+        assert token is None
+        assert any('OpenAI OAuth token refresh failed' in r.message for r in caplog.records)
+
+
+def test_refresh_401_logs_warning_and_clears_oauth(client, app, caplog):
+    """A 401 from token refresh should log a warning AND clear stored OAuth credentials."""
+    with app.app_context():
+        import logging
+        from datetime import timedelta
+        from models import Settings, db
+        from models.settings import _utcnow_naive
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = 'expired-token'
+        settings.openai_oauth_refresh_token = 'refresh-token'
+        settings.openai_oauth_expires_at = _utcnow_naive() - timedelta(seconds=5)
+        db.session.commit()
+
+        resp = MagicMock()
+        resp.status_code = 401
+        http_err = requests.exceptions.HTTPError(response=resp)
+        with patch('requests.post', side_effect=http_err):
+            with caplog.at_level(logging.WARNING, logger='models.settings'):
+                token = settings.get_openai_oauth_token()
+
+        assert token is None
+        assert settings.openai_oauth_access_token is None
+        assert any('OpenAI OAuth token refresh failed' in r.message for r in caplog.records)

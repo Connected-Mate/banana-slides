@@ -1225,7 +1225,7 @@ def refine_outline(project_id):
         # Return pages
         return success_response({
             'pages': [page.to_dict() for page in pages_list],
-            'message': '大纲修改成功'
+            'message': 'Outline updated successfully'
         })
     
     except Exception as e:
@@ -1349,7 +1349,7 @@ def refine_descriptions(project_id):
         # Return pages
         return success_response({
             'pages': [page.to_dict() for page in pages],
-            'message': '页面描述修改成功'
+            'message': 'Page description updated successfully'
         })
     
     except Exception as e:

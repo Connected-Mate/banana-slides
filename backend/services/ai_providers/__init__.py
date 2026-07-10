@@ -36,6 +36,24 @@ __all__ = [
 # LazyLLM vendor names (used to distinguish from gemini/openai formats)
 LAZYLLM_VENDORS = {'qwen', 'doubao', 'deepseek', 'glm', 'siliconflow', 'sensenova', 'minimax', 'kimi'}
 
+# ChatGPT-first safety net: if a Codex (OpenAI OAuth) request somehow still carries a
+# leftover Gemini model name (e.g. stale settings from before the provider switched),
+# substitute a Codex-compatible default instead of sending a Gemini model name to
+# ChatGPT's backend and failing.
+CODEX_FALLBACK_TEXT_MODEL = 'gpt-5.5'
+CODEX_FALLBACK_IMAGE_MODEL = 'gpt-image-2'
+
+
+def _codex_safe_model(model: str, fallback: str, model_type: str) -> str:
+    """Swap a Gemini model name for a Codex-compatible default when format=codex."""
+    if model and model.lower().startswith('gemini-'):
+        logger.warning(
+            "Codex provider requested with Gemini model '%s' for %s; "
+            "substituting '%s'", model, model_type, fallback,
+        )
+        return fallback
+    return model
+
 
 def _get_openai_oauth_token() -> Optional[str]:
     """Try to get a valid OpenAI OAuth token from the database."""
@@ -330,6 +348,7 @@ def get_caption_provider(model: str = "gemini-3-flash-preview") -> TextProvider:
         logger.info("Caption provider: LazyLLM, model=%s, source=%s", model, source)
         return LazyLLMTextProvider(source=source, model=model)
     elif fmt == 'codex':
+        model = _codex_safe_model(model, CODEX_FALLBACK_TEXT_MODEL, 'image_caption')
         logger.info("Caption provider: Codex (OAuth), model=%s", model)
         return CodexTextProvider(api_key=config['api_key'], model=model)
     else:
@@ -359,6 +378,7 @@ def get_text_provider(model: str = "gemini-3-flash-preview") -> TextProvider:
         logger.info("Text provider: LazyLLM, model=%s, source=%s", model, source)
         return LazyLLMTextProvider(source=source, model=model)
     elif fmt == 'codex':
+        model = _codex_safe_model(model, CODEX_FALLBACK_TEXT_MODEL, 'text')
         logger.info("Text provider: Codex (OAuth), model=%s", model)
         return CodexTextProvider(api_key=config['api_key'], model=model)
     else:
@@ -399,6 +419,7 @@ def get_image_provider(model: str = "gemini-3-pro-image-preview") -> ImageProvid
         logger.info("Image provider: LazyLLM, model=%s, source=%s", model, source)
         return LazyLLMImageProvider(source=source, model=model)
     elif fmt == 'codex':
+        model = _codex_safe_model(model, CODEX_FALLBACK_IMAGE_MODEL, 'image')
         resolution = _resolve_setting('DEFAULT_RESOLUTION', '2K') or '2K'
         logger.info("Image provider: Codex (OAuth), model=%s, resolution=%s", model, resolution)
         return CodexImageProvider(api_key=config['api_key'], model=model, resolution=resolution)

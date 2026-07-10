@@ -422,7 +422,7 @@ def generate_elevenlabs_audio_sync(
         if audio_b64 is None and isinstance(response, dict):
             audio_b64 = response.get('audio_base_64') or response.get('audio_base64')
         if not audio_b64:
-            raise RuntimeError("ElevenLabs 未返回 audio_base64 数据")
+            raise RuntimeError("ElevenLabs did not return audio_base64 data")
 
         with open(output_path, 'wb') as f:
             f.write(base64.b64decode(audio_b64))
@@ -454,13 +454,13 @@ def generate_elevenlabs_audio_sync(
         err_status = detail.get('status', '') if isinstance(detail, dict) else ''
         msg = (detail.get('message') if isinstance(detail, dict) else None) or str(e)
         if err_status == 'quota_exceeded' or 'quota' in msg.lower() or 'credits' in msg.lower():
-            raise RuntimeError(f"ElevenLabs 免费配额已不足：{msg}") from e
+            raise RuntimeError(f"ElevenLabs quota exhausted: {msg}") from e
         elif err_status == 'invalid_api_key' or status == 401:
-            raise RuntimeError(f"ElevenLabs 认证失败，请检查 API Key 是否有效") from e
+            raise RuntimeError(f"ElevenLabs authentication failed. Please check whether the API Key is valid") from e
         elif status == 402 or (isinstance(detail, dict) and detail.get('code') == 'paid_plan_required'):
-            raise RuntimeError(f"ElevenLabs 该声音需要付费套餐：{msg}") from e
+            raise RuntimeError(f"This ElevenLabs voice requires a paid plan: {msg}") from e
         else:
-            raise RuntimeError(f"ElevenLabs API 错误 (HTTP {status})：{msg}") from e
+            raise RuntimeError(f"ElevenLabs API error (HTTP {status}): {msg}") from e
 
     duration = get_audio_duration(output_path, ffmpeg_path)
     logger.debug(
@@ -664,7 +664,7 @@ def _synthesize_batch_and_split(
         )
         if not alignment:
             raise RuntimeError(
-                f"ElevenLabs 未返回字符级 alignment（batch {batch_label}），无法定位字幕时间，已停止导出"
+                f"ElevenLabs did not return character-level alignment (batch {batch_label}); cannot locate subtitle timing, export stopped"
             )
         return [(audio_path, alignment, duration)]
 
@@ -680,7 +680,7 @@ def _synthesize_batch_and_split(
 
     if not full_alignment:
         raise RuntimeError(
-            f"ElevenLabs 未返回字符级 alignment（batch {batch_label}），无法做整段切片，已停止导出"
+            f"ElevenLabs did not return character-level alignment (batch {batch_label}); cannot slice the merged audio, export stopped"
         )
 
     chars = full_alignment.get('characters') or []
@@ -688,7 +688,7 @@ def _synthesize_batch_and_split(
     durs_ms = full_alignment.get('character_durations_ms') or []
     if not chars or len(chars) != len(starts_ms) or len(chars) != len(durs_ms):
         raise RuntimeError(
-            f"ElevenLabs alignment 数据不完整（batch {batch_label}），已停止导出"
+            f"ElevenLabs alignment data is incomplete (batch {batch_label}), export stopped"
         )
 
     boundaries_sec = _find_page_boundaries_sec(
@@ -743,7 +743,7 @@ def _generate_elevenlabs_whole_and_split(
         for i in narration_indexes
     ]
     if not all(page_texts):
-        raise RuntimeError("整段合成：存在空 narration，无法构造完整文本")
+        raise RuntimeError("Batch synthesis: an empty narration was found, cannot build the full text")
 
     batches = _pack_pages_into_batches(
         narration_indexes, page_texts,
@@ -760,7 +760,7 @@ def _generate_elevenlabs_whole_and_split(
             total_chars = sum(len(t) for t in batch_texts)
             progress_callback(
                 "TTS",
-                f"整段合成第 {label} 批（{len(batch)} 页 / {total_chars} 字）",
+                f"Batch synthesis {label} ({len(batch)} pages / {total_chars} characters)",
                 22,
             )
         batch_results = _synthesize_batch_and_split(
@@ -1534,9 +1534,9 @@ def generate_narration_video(
     requires_subtitles = any((page.get('narration_text') or '').strip() for page in pages_data)
     if requires_subtitles and not check_ffmpeg_ass_filter_available(ffmpeg_path):
         raise RuntimeError(
-            "当前 FFmpeg 不支持 ASS 字幕烧录（缺少 libass / ass filter）。"
-            "视频导出需要安装带 libass 的 FFmpeg。"
-            "请安装或重装支持 ASS 字幕的 FFmpeg 后重试。"
+            "The current FFmpeg does not support ASS subtitle burning (missing libass / ass filter). "
+            "Video export requires an FFmpeg build with libass. "
+            "Please install or reinstall an FFmpeg build with ASS subtitle support and try again."
         )
 
     if silent_duration <= 0:
@@ -1635,9 +1635,9 @@ def generate_narration_video(
             if progress_callback:
                 pct = int(20 + (i + 1) / total * 30)  # 20-50%
                 if audio_path:
-                    message = f"已生成第 {i+1}/{total} 页音频"
+                    message = f"Generated audio for page {i+1}/{total}"
                 else:
-                    message = f"第 {i+1}/{total} 页无有效语音，改为静音片段"
+                    message = f"Page {i+1}/{total} has no valid speech, using a silent clip instead"
                 progress_callback("TTS", message, pct)
 
         if fail_fast and silent_page_indexes:
@@ -1726,11 +1726,11 @@ def generate_narration_video(
 
             if progress_callback:
                 pct = int(50 + (i + 1) / total * 30)  # 50-80%
-                progress_callback("视频", f"已生成第 {i+1}/{total} 页视频片段", pct)
+                progress_callback("Video", f"Generated video clip for page {i+1}/{total}", pct)
 
         # ── Phase C: 拼接视频 ──
         if progress_callback:
-            progress_callback("合成", "正在拼接视频…", 82)
+            progress_callback("Compositing", "Concatenating video…", 82)
 
         raw_video = os.path.join(tmp_dir, 'raw_composite.mp4')
         composite_video(muxed_clips, raw_video, fps=fps, ffmpeg_path=ffmpeg_path)
@@ -1738,7 +1738,7 @@ def generate_narration_video(
         # ── Phase D: 烧录字幕 ──
         if subtitle_entries:
             if progress_callback:
-                progress_callback("字幕", "正在烧录字幕…", 88)
+                progress_callback("Subtitles", "Burning subtitles…", 88)
 
             ass_path = os.path.join(tmp_dir, 'subtitles.ass')
             generate_ass_subtitle(subtitle_entries, ass_path, width=width, height=height)
@@ -1747,7 +1747,7 @@ def generate_narration_video(
             shutil.copy2(raw_video, output_path)
 
         if progress_callback:
-            progress_callback("完成", "视频导出完成", 100)
+            progress_callback("Done", "Video export complete", 100)
 
     finally:
         # 清理临时目录

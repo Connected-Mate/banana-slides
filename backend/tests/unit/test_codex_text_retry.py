@@ -213,3 +213,71 @@ class TestGenerateTextRetry:
         result = _provider().generate_with_image("describe", str(img_file))
         assert result == "described"
         mock_post.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# JWT helper for chatgpt-account-id header tests
+# ---------------------------------------------------------------------------
+
+def _make_jwt(payload: dict) -> str:
+    import base64 as _b64
+    import json as _json
+
+    def _b64url(data: bytes) -> str:
+        return _b64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+    header = _b64url(b'{"alg":"none","typ":"JWT"}')
+    body = _b64url(_json.dumps(payload).encode())
+    return f"{header}.{body}.sig"
+
+
+class TestCodexHeaders:
+
+    def test_headers_include_originator_and_accept(self):
+        headers = _provider()._headers()
+        assert headers["originator"] == "codex_cli_rs"
+        assert headers["Accept"] == "text/event-stream"
+        assert headers["Authorization"] == "Bearer test-token"
+
+    def test_headers_omit_account_id_for_non_jwt_token(self):
+        headers = _provider()._headers()
+        assert "chatgpt-account-id" not in headers
+
+    def test_headers_include_account_id_from_jwt_claim(self):
+        token = _make_jwt({"https://api.openai.com/auth": {"chatgpt_account_id": "acct_456"}})
+        provider = CodexTextProvider(api_key=token, model="gpt-5.5")
+        headers = provider._headers()
+        assert headers["chatgpt-account-id"] == "acct_456"
+
+
+class TestCodexDefaultModel:
+
+    def test_default_model_is_gpt_5_5(self):
+        provider = CodexTextProvider(api_key="test-token")
+        assert provider.model == "gpt-5.5"
+
+
+class TestCodexSSEFailure:
+
+    def _resp_with_events(self, *events):
+        import json as _json
+        resp = MagicMock()
+        lines = [f"data: {_json.dumps(e)}".encode() for e in events] + [b"data: [DONE]"]
+        resp.iter_lines.return_value = lines
+        return resp
+
+    def test_response_failed_event_raises_with_backend_message(self):
+        resp = self._resp_with_events({
+            "type": "response.failed",
+            "response": {"error": {"message": "content policy violation"}},
+        })
+        with pytest.raises(ValueError, match="content policy violation"):
+            list(CodexTextProvider._iter_sse_text(resp))
+
+    def test_error_event_raises_with_backend_message(self):
+        resp = self._resp_with_events({
+            "type": "error",
+            "error": {"message": "rate limited by plan"},
+        })
+        with pytest.raises(ValueError, match="rate limited by plan"):
+            list(CodexTextProvider._iter_sse_text(resp))
