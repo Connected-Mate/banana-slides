@@ -93,6 +93,10 @@ describe('Settings quality control', () => {
       </MemoryRouter>
     );
 
+    // Quality control now lives behind the collapsed "Advanced" disclosure
+    const advancedToggle = await screen.findByText(/Advanced: use your own API keys|高级：使用你自己的 API Key/);
+    await userEvent.click(advancedToggle);
+
     const label = await screen.findByText(/启用质量控制模式|Enable Quality Control/);
     const switchButton = label.parentElement?.querySelector('button');
     expect(switchButton).toBeTruthy();

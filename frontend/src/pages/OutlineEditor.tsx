@@ -528,10 +528,10 @@ export const OutlineEditor: React.FC = () => {
             </Button>
             <div className="flex items-center gap-1.5 md:gap-2">
               <span className="text-xl md:text-2xl">🍌</span>
-              <span className="text-base md:text-xl font-bold">{t('home.title')}</span>
+              <span className="font-display text-base md:text-xl font-bold">{t('home.title')}</span>
             </div>
             <span className="text-gray-400 hidden lg:inline">|</span>
-            <span className="text-sm md:text-lg font-semibold hidden lg:inline">{t('outline.title')}</span>
+            <span className="font-display text-sm md:text-lg font-semibold hidden lg:inline">{t('outline.title')}</span>
           </div>
 
           {/* 中间：AI 修改输入框 */}
@@ -809,7 +809,7 @@ export const OutlineEditor: React.FC = () => {
               <div className="flex justify-center mb-4">
                 <FileText size={48} className="text-gray-300" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-foreground-primary mb-2">
+              <h3 className="font-display text-lg font-semibold text-gray-800 dark:text-foreground-primary mb-2">
                 {t('outline.noPages')}
               </h3>
               <p className="text-gray-500 dark:text-foreground-tertiary mb-6">

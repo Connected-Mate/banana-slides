@@ -1687,10 +1687,10 @@ export const SlidePreview: React.FC = () => {
             </Button>
             <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
               <span className="text-xl md:text-2xl">🍌</span>
-              <span className="text-base md:text-xl font-bold truncate">{t('home.title')}</span>
+              <span className="font-display text-base md:text-xl font-bold truncate">{t('home.title')}</span>
             </div>
             <span className="text-gray-400 hidden md:inline">|</span>
-            <span className="text-sm md:text-lg font-semibold truncate hidden sm:inline">{t('preview.title')}</span>
+            <span className="font-display text-sm md:text-lg font-semibold truncate hidden sm:inline">{t('preview.title')}</span>
         </div>
         <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
             <Button
@@ -1911,7 +1911,7 @@ export const SlidePreview: React.FC = () => {
       {showPptxExportDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPptxExportDialog(false)}>
           <div className="bg-white dark:bg-background-secondary rounded-2xl shadow-xl p-6 w-full max-w-xl mx-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold">{t('preview.pptxExportTitle')}</h3>
+            <h3 className="font-display text-lg font-semibold">{t('preview.pptxExportTitle')}</h3>
             <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.pptxExportSubtitle')}</p>
 
             <div className="space-y-4">
@@ -1997,7 +1997,7 @@ export const SlidePreview: React.FC = () => {
       {showVideoExportDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowVideoExportDialog(false)}>
           <div className="bg-white dark:bg-background-secondary rounded-2xl shadow-xl p-6 w-[680px] max-w-[96vw] max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold">{t('preview.videoExportTitle')}</h3>
+            <h3 className="font-display text-lg font-semibold">{t('preview.videoExportTitle')}</h3>
             <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.videoExportSubtitle')}</p>
             <div className="space-y-5">
               <div className="rounded-xl border border-gray-200 dark:border-border-primary p-4 space-y-4">
@@ -2266,7 +2266,7 @@ export const SlidePreview: React.FC = () => {
       {showEditablePptxDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowEditablePptxDialog(false)}>
           <div className="bg-white dark:bg-background-secondary rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold">{t('preview.editablePptxDialogTitle')}</h3>
+            <h3 className="font-display text-lg font-semibold">{t('preview.editablePptxDialogTitle')}</h3>
             <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.editablePptxDialogSubtitle')}</p>
             <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-background-hover">
               <input
@@ -2486,7 +2486,7 @@ export const SlidePreview: React.FC = () => {
             <div className="flex-1 flex items-center justify-center overflow-y-auto">
               <div className="text-center">
                 <div className="text-4xl md:text-6xl mb-4">📊</div>
-                <h3 className="text-lg md:text-xl font-semibold text-gray-700 dark:text-foreground-secondary mb-2">
+                <h3 className="font-display text-lg md:text-xl font-semibold text-gray-700 dark:text-foreground-secondary mb-2">
                   {t('preview.noPages')}
                 </h3>
                 <p className="text-sm md:text-base text-gray-500 dark:text-foreground-tertiary mb-6">
