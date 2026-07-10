@@ -1878,7 +1878,7 @@ export const SlidePreview: React.FC = () => {
                       const res = await getSettings();
                       const hasKey = (res.data?.elevenlabs_api_key_length ?? 0) > 0;
                       setElevenLabsApiKeyConfigured(hasKey);
-                      const lang = (res.data?.output_language as string | undefined) || 'zh';
+                      const lang = (res.data?.output_language as string | undefined) || 'en';
                       setOutputLanguage(lang);
                       if (!hasKey) setElevenLabsEnabled(false);
                       if (hasKey && elevenLabsEnabled && elevenLabsVoices.length === 0) {
@@ -2065,7 +2065,7 @@ export const SlidePreview: React.FC = () => {
                     <label className="block text-sm font-medium mb-1.5">{t('preview.videoVoiceLabel')}</label>
                     {elevenLabsEnabled ? (
                       (() => {
-                        const targetLang = (outputLanguage || 'zh').toLowerCase();
+                        const targetLang = (outputLanguage || 'en').toLowerCase();
                         const matched = elevenLabsVoices.filter(v => (v.languages || []).some(l => l.toLowerCase() === targetLang));
                         const noMatch = !elevenLabsVoicesLoading && elevenLabsVoices.length > 0 && matched.length === 0;
                         const list = matched.length > 0 ? matched : elevenLabsVoices;

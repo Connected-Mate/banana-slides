@@ -1282,15 +1282,15 @@ export const getDefaultOutputLanguage = async (): Promise<ApiResponse<{ language
 
 /**
  * 从后端 Settings 获取用户的输出语言偏好
- * 如果获取失败，返回默认值 'zh'
+ * 如果获取失败，返回默认值 'en'
  */
 export const getStoredOutputLanguage = async (): Promise<OutputLanguage> => {
   try {
     const response = await apiClient.get<ApiResponse<{ language: OutputLanguage }>>('/api/output-language');
-    return response.data.data?.language || 'zh';
+    return response.data.data?.language || 'en';
   } catch (error) {
     console.warn('Failed to load output language from settings, using default', error);
-    return 'zh';
+    return 'en';
   }
 };
 

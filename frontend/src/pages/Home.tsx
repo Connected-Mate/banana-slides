@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb, Search, Settings, FolderOpen, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw } from 'lucide-react';
-import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, GithubRepoCard, TextStyleSelector } from '@/components/shared';
+import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb, Settings, FolderOpen, HelpCircle, Sun, Moon, Globe, Monitor, ChevronDown, Upload, RefreshCw } from 'lucide-react';
+import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, TextStyleSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate, uploadReferenceFile, type ReferenceFile, associateFileToProject, triggerFileParse, associateMaterialsToProject, createPptRenovationProject } from '@/api/endpoints';
@@ -74,6 +74,7 @@ const homeI18n = {
         selectFile: '选择参考文件',
         parsing: '解析中...',
         createProject: '创建新项目',
+        styleOptions: '风格与模板',
       },
       renovation: {
         uploadHint: '点击或拖拽上传 PDF / PPTX 文件',
@@ -155,6 +156,7 @@ const homeI18n = {
         selectFile: 'Select reference file',
         parsing: 'Parsing...',
         createProject: 'Create New Project',
+        styleOptions: 'Style & template',
       },
       renovation: {
         uploadHint: 'Click or drag to upload PDF / PPTX file',
@@ -205,6 +207,7 @@ export const Home: React.FC = () => {
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   const [isMaterialCenterOpen, setIsMaterialCenterOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [showStyleOptions, setShowStyleOptions] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [userTemplates, setUserTemplates] = useState<UserTemplate[]>([]);
@@ -722,127 +725,73 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50/30 to-pink-50/50 dark:from-background-primary dark:via-background-primary dark:to-background-primary relative overflow-hidden">
-      {/* 背景装饰元素 - 仅在亮色模式显示 */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none dark:hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-banana-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-yellow-400/5 rounded-full blur-3xl"></div>
-      </div>
-
-      {/* 导航栏 — web only */}
+    <div className="min-h-screen bg-yellow-50/40 dark:bg-background-primary relative">
+      {/* 导航栏 — web only, brand + History/Settings 为主，其余收进图标区 */}
       {!isDesktop && (
-      <nav className="relative z-50 h-16 md:h-18 bg-white/40 dark:bg-background-primary backdrop-blur-2xl dark:backdrop-blur-none dark:border-b dark:border-border-primary">
-
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center">
-              <img
-                src={logoUrl}
-                alt="蕉幻 Banana Slides Logo"
-                className="h-10 md:h-12 w-auto rounded-lg object-contain"
-              />
-            </div>
-            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-banana-600 via-orange-500 to-pink-500 bg-clip-text text-transparent">
-              蕉幻
+      <nav className="relative z-50 h-16 bg-white/60 dark:bg-background-primary backdrop-blur-xl dark:backdrop-blur-none dark:border-b dark:border-border-primary">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <img src={logoUrl} alt="蕉幻 Banana Slides" className="h-8 w-auto rounded-md object-contain" />
+            <span className="font-display text-subhead font-semibold text-gray-900 dark:text-white">
+              {i18n.language?.startsWith('zh') ? t('home.title') : 'Banana Slides'}
             </span>
           </div>
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* 桌面端：带文字的素材生成按钮 */}
+          <div className="flex items-center gap-1">
             <Button
-              variant="ghost"
-              size="sm"
-              icon={<ImagePlus size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={handleOpenMaterialModal}
-              className="hidden sm:inline-flex hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
-            >
-              <span className="hidden md:inline">{t('nav.materialGenerate')}</span>
-            </Button>
-            {/* 手机端：仅图标的素材生成按钮 */}
-            <Button
-              variant="ghost"
-              size="sm"
+              variant="ghost" size="sm"
               icon={<ImagePlus size={16} />}
               onClick={handleOpenMaterialModal}
-              className="sm:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
               title={t('nav.materialGenerate')}
+              className="hover:bg-banana-100/60 dark:hover:bg-background-hover"
             />
-            {/* 桌面端：带文字的素材中心按钮 */}
             <Button
-              variant="ghost"
-              size="sm"
-              icon={<FolderOpen size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => setIsMaterialCenterOpen(true)}
-              className="hidden sm:inline-flex hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
-            >
-              <span className="hidden md:inline">{t('nav.materialCenter')}</span>
-            </Button>
-            {/* 手机端：仅图标的素材中心按钮 */}
-            <Button
-              variant="ghost"
-              size="sm"
+              variant="ghost" size="sm"
               icon={<FolderOpen size={16} />}
               onClick={() => setIsMaterialCenterOpen(true)}
-              className="sm:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
               title={t('nav.materialCenter')}
+              className="hover:bg-banana-100/60 dark:hover:bg-background-hover"
             />
             <Button
-              variant="ghost"
-              size="sm"
+              variant="ghost" size="sm"
               onClick={() => navigate('/history')}
-              className="text-xs md:text-sm hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
+              className="text-sm hover:bg-banana-100/60 dark:hover:bg-background-hover font-medium"
             >
-              <span className="hidden sm:inline">{t('nav.history')}</span>
-              <span className="sm:hidden">{t('nav.history')}</span>
+              {t('nav.history')}
             </Button>
             <Button
-              variant="ghost"
-              size="sm"
-              icon={<Settings size={16} className="md:w-[18px] md:h-[18px]" />}
+              variant="ghost" size="sm"
+              icon={<Settings size={16} />}
               onClick={() => navigate('/settings')}
-              className="text-xs md:text-sm hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200 font-medium"
+              title={t('nav.settings')}
+              className="text-sm hover:bg-banana-100/60 dark:hover:bg-background-hover font-medium"
             >
               <span className="hidden md:inline">{t('nav.settings')}</span>
             </Button>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsHelpModalOpen(true)}
-              className="hidden md:inline-flex hover:bg-banana-50/50"
-            >
-              {t('nav.help')}
-            </Button>
-            {/* 移动端帮助按钮 */}
-            <Button
-              variant="ghost"
-              size="sm"
+              variant="ghost" size="sm"
               icon={<HelpCircle size={16} />}
               onClick={() => setIsHelpModalOpen(true)}
-              className="md:hidden hover:bg-banana-100/60 hover:shadow-sm hover:scale-105 transition-all duration-200"
               title={t('nav.help')}
+              className="hover:bg-banana-100/60 dark:hover:bg-background-hover"
             />
-            {/* 分隔线 */}
-            <div className="h-5 w-px bg-gray-300 dark:bg-border-primary mx-1" />
-            {/* 语言切换按钮 */}
+            <div className="h-4 w-px bg-gray-300 dark:bg-border-primary mx-1" />
             <button
               onClick={() => i18n.changeLanguage(i18n.language?.startsWith('zh') ? 'en' : 'zh')}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
+              className="flex items-center gap-1 px-2 py-1.5 text-meta font-medium text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-colors"
               title={t('settings.language.label')}
             >
               <Globe size={14} />
               <span>{i18n.language?.startsWith('zh') ? 'EN' : '中'}</span>
             </button>
-            {/* 主题切换按钮 */}
             <div className="relative" ref={themeMenuRef}>
               <button
                 onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-                className="flex items-center gap-1 p-1.5 text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-all"
+                className="flex items-center gap-1 p-1.5 text-gray-600 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-gray-100 hover:bg-banana-100/60 dark:hover:bg-background-hover rounded-md transition-colors"
                 title={t('settings.theme.label')}
               >
                 {theme === 'system' ? <Monitor size={16} /> : isDark ? <Moon size={16} /> : <Sun size={16} />}
                 <ChevronDown size={12} className={`transition-transform ${isThemeMenuOpen ? 'rotate-180' : ''}`} />
               </button>
-              {/* 主题下拉菜单 */}
               {isThemeMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsThemeMenuOpen(false)} />
@@ -872,72 +821,37 @@ export const Home: React.FC = () => {
                 </>
               )}
             </div>
-            {/* 分隔线 */}
-            <div className="h-5 w-px bg-gray-300 dark:bg-border-primary mx-1" />
-            {/* GitHub 仓库卡片 */}
-            <GithubRepoCard />
-            {/* 分隔线 */}
           </div>
         </div>
       </nav>
       )}
 
       {/* 主内容 */}
-      <main className="relative max-w-5xl mx-auto px-3 md:px-4 py-8 md:py-12">
-        {/* Hero 标题区 */}
-        <div className="text-center mb-10 md:mb-16 space-y-4 md:space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-background-secondary backdrop-blur-sm rounded-full shadow-sm dark:shadow-none mb-4">
-            <span className="text-2xl animate-pulse"><Sparkles size={20} className="text-orange-500 dark:text-banana" /></span>
-            <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('home.tagline')}</span>
-          </div>
-
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
-            <span className="bg-gradient-to-r from-yellow-600 via-orange-500 to-pink-500 dark:from-banana-dark dark:via-banana dark:to-banana-light bg-clip-text text-transparent dark:italic" style={{
-              backgroundSize: '200% auto',
-              animation: 'gradient 3s ease infinite',
-            }}>
-              {i18n.language?.startsWith('zh') ? `${t('home.title')} · Banana Slides` : 'Banana Slides'}
-            </span>
+      <main className="relative max-w-3xl mx-auto px-3 md:px-4 py-10 md:py-16">
+        {/* Hero 标题区 — 一个焦点：标题 + 输入框 + Generate */}
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="font-display text-4xl md:text-display font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white">
+            {i18n.language?.startsWith('zh') ? t('home.title') : 'Banana Slides'}
           </h1>
-
-          <p className="text-lg md:text-xl text-gray-600 dark:text-foreground-secondary max-w-2xl mx-auto font-light">
+          <p className="mt-3 text-body md:text-subhead text-gray-500 dark:text-foreground-tertiary max-w-md mx-auto">
             {t('home.subtitle')}
           </p>
-
-          {/* 特性标签 */}
-          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 pt-4">
-            {[
-              { icon: <Sparkles size={14} className="text-yellow-600 dark:text-banana" />, label: t('home.features.oneClick') },
-              { icon: <FileEdit size={14} className="text-blue-500 dark:text-blue-400" />, label: t('home.features.naturalEdit') },
-              { icon: <Search size={14} className="text-orange-500 dark:text-orange-400" />, label: t('home.features.regionEdit') },
-
-              { icon: <Paperclip size={14} className="text-green-600 dark:text-green-400" />, label: t('home.features.export') },
-            ].map((feature, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center gap-1 px-3 py-1.5 bg-white/70 dark:bg-background-secondary backdrop-blur-sm rounded-full text-xs md:text-sm text-gray-700 dark:text-foreground-secondary border border-gray-200/50 dark:border-border-primary shadow-sm dark:shadow-none hover:shadow-md dark:hover:border-border-hover transition-all hover:scale-105 cursor-default"
-              >
-                {feature.icon}
-                {feature.label}
-              </span>
-            ))}
-          </div>
         </div>
 
         {/* 创建卡片 */}
-        <Card className="p-4 md:p-10 bg-white/90 dark:bg-background-secondary backdrop-blur-xl dark:backdrop-blur-none shadow-2xl dark:shadow-none border-0 dark:border dark:border-border-primary hover:shadow-3xl dark:hover:shadow-none transition-all duration-300 dark:rounded-2xl">
+        <Card className="p-4 md:p-8 bg-white dark:bg-background-secondary shadow-sm dark:shadow-none border border-gray-200/70 dark:border dark:border-border-primary rounded-2xl">
           {/* 选项卡 */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row gap-2 mb-5 md:mb-6">
             {(Object.keys(tabConfig) as CreationType[]).map((type) => {
               const config = tabConfig[type];
               return (
                 <button
                   key={type}
                   onClick={() => setActiveTab(type)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2.5 md:py-3 rounded-lg dark:rounded-xl font-medium transition-all text-sm md:text-base touch-manipulation ${
+                  className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2.5 rounded-xl font-medium transition-colors text-sm touch-manipulation ${
                     activeTab === type
-                      ? 'bg-gradient-to-r from-banana-500 to-banana-600 dark:from-banana dark:to-banana text-black shadow-yellow dark:shadow-lg dark:shadow-banana/20'
-                      : 'bg-white dark:bg-background-elevated border border-gray-200 dark:border-border-primary text-gray-700 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-background-hover active:bg-banana-100'
+                      ? 'bg-banana-500 dark:bg-banana text-black'
+                      : 'bg-transparent border border-gray-200 dark:border-border-primary text-gray-600 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-background-hover active:bg-banana-100'
                   }`}
                 >
                   <span className="scale-90 md:scale-100">{config.icon}</span>
@@ -949,10 +863,10 @@ export const Home: React.FC = () => {
 
           {/* 描述 */}
           <div className="relative">
-            <p className="text-sm md:text-base mb-4 md:mb-6 leading-relaxed">
-              <span className="inline-flex items-center gap-2 text-gray-600 dark:text-foreground-tertiary">
-                <Lightbulb size={16} className="text-banana-600 dark:text-banana flex-shrink-0" />
-                <span className="font-semibold">
+            <p className="text-meta md:text-body mb-4 leading-relaxed">
+              <span className="inline-flex items-center gap-2 text-gray-500 dark:text-foreground-tertiary">
+                <Lightbulb size={15} className="text-banana-600 dark:text-banana flex-shrink-0" />
+                <span className="font-medium">
                   {tabConfig[activeTab].description}
                 </span>
                 {tabConfig[activeTab].example && (
@@ -1153,70 +1067,82 @@ export const Home: React.FC = () => {
             showToast={show}
           />
 
-          {/* 模板选择 */}
-          <div className="mb-6 md:mb-8 pt-4 border-t border-gray-100 dark:border-border-primary">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <div className="flex items-center gap-2">
-                <Palette size={18} className="text-orange-600 dark:text-banana flex-shrink-0" />
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('home.template.title')}
-                </h3>
-              </div>
-              {/* 无模板图模式开关 */}
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <span className="text-sm text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                  {t('home.template.useTextStyle')}
-                </span>
-                <div className="relative">
+          {/* 风格与模板 — 折叠，默认隐藏（progressive disclosure） */}
+          <div className="mt-2 pt-4 border-t border-gray-100 dark:border-border-primary">
+            <button
+              type="button"
+              onClick={() => setShowStyleOptions(v => !v)}
+              className="flex items-center gap-2 text-meta font-medium text-gray-500 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-white transition-colors"
+              aria-expanded={showStyleOptions}
+            >
+              <Palette size={14} className="flex-shrink-0" />
+              <span>{t('home.actions.styleOptions')}</span>
+              <ChevronDown size={13} className={`transition-transform ${showStyleOptions ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showStyleOptions && (
+              <div className="mt-4 space-y-4 animate-slide-in-up">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-body font-semibold text-gray-900 dark:text-white">
+                    {t('home.template.title')}
+                  </h3>
+                  {/* 无模板图模式开关 */}
+                  <label className="flex items-center gap-2 cursor-pointer group">
+                    <span className="text-meta text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                      {t('home.template.useTextStyle')}
+                    </span>
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        checked={useTemplateStyle}
+                        onChange={(e) => {
+                          setUseTemplateStyle(e.target.checked);
+                          // 切换到无模板图模式时，清空模板选择
+                          if (e.target.checked) {
+                            setSelectedTemplate(null);
+                            setSelectedTemplateId(null);
+                            setSelectedPresetTemplateId(null);
+                          }
+                          // 不再清空风格描述，允许用户保留已输入的内容
+                        }}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-banana-300 dark:peer-focus:ring-banana/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-banana"></div>
+                    </div>
+                  </label>
+                </div>
+
+                {/* 多模板模式开关 */}
+                <label className="flex items-center gap-2 cursor-pointer group" title={t('home.template.multiModeHint')}>
                   <input
                     type="checkbox"
-                    checked={useTemplateStyle}
-                    onChange={(e) => {
-                      setUseTemplateStyle(e.target.checked);
-                      // 切换到无模板图模式时，清空模板选择
-                      if (e.target.checked) {
-                        setSelectedTemplate(null);
-                        setSelectedTemplateId(null);
-                        setSelectedPresetTemplateId(null);
-                      }
-                      // 不再清空风格描述，允许用户保留已输入的内容
-                    }}
-                    className="sr-only peer"
+                    checked={multiTemplateMode}
+                    onChange={(e) => setMultiTemplateMode(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-banana-500 focus:ring-banana-400"
                   />
-                  <div className="w-11 h-6 bg-gray-200 dark:bg-background-hover peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-banana-300 dark:peer-focus:ring-banana/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white dark:after:bg-foreground-secondary after:border-gray-300 dark:after:border-border-hover after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-banana"></div>
-                </div>
-              </label>
-            </div>
-            
-            {/* 多模板模式开关 */}
-            <label className="flex items-center gap-2 cursor-pointer group mb-3" title={t('home.template.multiModeHint')}>
-              <input
-                type="checkbox"
-                checked={multiTemplateMode}
-                onChange={(e) => setMultiTemplateMode(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-banana-500 focus:ring-banana-400"
-              />
-              <span className="text-sm text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                {t('home.template.multiMode')}
-              </span>
-              <span className="text-xs text-gray-400">{t('home.template.multiModeHint')}</span>
-            </label>
+                  <span className="text-meta text-gray-600 dark:text-foreground-tertiary group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                    {t('home.template.multiMode')}
+                  </span>
+                  <span className="text-meta text-gray-400">{t('home.template.multiModeHint')}</span>
+                </label>
 
-            {/* 根据模式显示不同的内容 */}
-            {useTemplateStyle ? (
-              <TextStyleSelector
-                value={templateStyle}
-                onChange={setTemplateStyle}
-                onToast={show}
-              />
-            ) : (
-              <TemplateSelector
-                onSelect={handleTemplateSelect}
-                selectedTemplateId={selectedTemplateId}
-                selectedPresetTemplateId={selectedPresetTemplateId}
-                showUpload={true} // 在主页上传的模板保存到用户模板库
-                projectId={currentProjectId}
-              />
+                {/* 根据模式显示不同的内容 */}
+                {useTemplateStyle ? (
+                  <TextStyleSelector
+                    value={templateStyle}
+                    onChange={setTemplateStyle}
+                    onToast={show}
+                  />
+                ) : (
+                  <TemplateSelector
+                    onSelect={handleTemplateSelect}
+                    selectedTemplateId={selectedTemplateId}
+                    selectedPresetTemplateId={selectedPresetTemplateId}
+                    showUpload={true} // 在主页上传的模板保存到用户模板库
+                    projectId={currentProjectId}
+                  />
+                )}
+              </div>
             )}
           </div>
 

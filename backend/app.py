@@ -191,6 +191,20 @@ def create_app():
         # Load settings from database and sync to app.config
         _load_settings_to_config(app)
 
+        # If OpenAI OAuth is connected (our token or an external ~/.gptimage /
+        # ~/.codex fallback) but no provider was ever configured, default to
+        # Codex now — otherwise a ChatGPT-only install would sit on the Gemini
+        # defaults with no API key and fail every generation. No-op if the
+        # user configured anything explicitly.
+        from models import Settings
+        try:
+            if Settings.get_settings().apply_codex_defaults_if_untouched():
+                _load_settings_to_config(app)
+        except Exception as e:
+            # Mirrors _load_settings_to_config: a missing/uninitialized settings
+            # table (e.g. app factory reloaded in tests) must not break startup.
+            logging.getLogger(__name__).warning(f'Skipping codex default detection: {e}')
+
     # Access code enforcement on all /api/ routes
     @app.before_request
     def _enforce_access_code():
@@ -244,7 +258,7 @@ def create_app():
             return {'data': {'language': settings.output_language or Config.OUTPUT_LANGUAGE}}
         except SQLAlchemyError as db_error:
             logging.warning(f"Failed to load output language from settings: {db_error}")
-            return {'data': {'language': Config.OUTPUT_LANGUAGE}}  # 默认中文
+            return {'data': {'language': Config.OUTPUT_LANGUAGE}}  # default: English
 
     # Root endpoint
     @app.route('/')

@@ -121,9 +121,11 @@ def authorize():
 
 @openai_oauth_bp.route("/disconnect", methods=["POST"])
 def disconnect():
-    """Clear stored OAuth tokens."""
+    """Clear stored OAuth tokens and stop reusing external OAuth stores
+    (~/.gptimage, ~/.codex) — those files are shared logins from other tools
+    and are never deleted, just ignored until the user reconnects."""
     settings = Settings.get_settings()
-    settings.clear_openai_oauth()
+    settings.disconnect_openai_oauth()
     db.session.commit()
     logger.info("OpenAI OAuth disconnected")
     return success_response({"message": "Disconnected"})
@@ -131,12 +133,12 @@ def disconnect():
 
 @openai_oauth_bp.route("/status", methods=["GET"])
 def status():
-    """Return current OAuth connection status."""
+    """Return current OAuth connection status (our DB token, or an external fallback)."""
     settings = Settings.get_settings()
     connected = settings.is_openai_oauth_connected()
     return success_response({
         "connected": connected,
-        "account_id": settings.openai_oauth_account_id if connected else None,
+        "account_id": settings.get_openai_oauth_account_id() if connected else None,
     })
 
 

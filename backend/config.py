@@ -120,7 +120,7 @@ class Config:
     
     # 输出语言配置
     # 可选值: 'zh' (中文), 'ja' (日本語), 'en' (English), 'auto' (自动)
-    OUTPUT_LANGUAGE = os.getenv('OUTPUT_LANGUAGE', 'zh')
+    OUTPUT_LANGUAGE = os.getenv('OUTPUT_LANGUAGE', 'en')
     
     # 火山引擎配置
     VOLCENGINE_ACCESS_KEY = os.getenv('VOLCENGINE_ACCESS_KEY', '')

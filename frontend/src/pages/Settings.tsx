@@ -20,7 +20,7 @@ const settingsI18n = {
         textReasoning: "文本推理模式", imageReasoning: "图像推理模式",
         baiduOcr: "百度配置", serviceTest: "服务测试", lazyllmConfig: "LazyLLM 厂商配置",
         vendorApiKeys: "厂商 API Key 配置",
-        advancedSettings: "高级设置",
+        advancedSettings: "高级：使用你自己的 API Key",
         elevenlabs: "ElevenLabs 语音合成",
         about: "关于"
       },
@@ -37,9 +37,9 @@ const settingsI18n = {
         close: "关闭",
       },
       openaiOAuth: {
-        title: "OpenAI 账号连接",
-        description: "通过 OAuth 登录 OpenAI 账号，无需手动输入 API Key 即可使用 OpenAI 的模型（如 GPT Image）",
-        loginBtn: "Login with OpenAI",
+        title: "ChatGPT 账号",
+        description: "连接你的 ChatGPT 账号，无需 API Key，即可用 GPT Image 生成 PPT",
+        loginBtn: "使用 ChatGPT 登录",
         disconnectBtn: "断开连接",
         connected: "已连接",
         disconnected: "未连接",
@@ -49,7 +49,8 @@ const settingsI18n = {
         connectFailed: "连接失败",
         disconnectFailed: "断开失败",
         disconnectSuccess: "已断开 OpenAI 账号",
-        hint: "连接后，可在上方模型配置中选择 Codex 作为提供商，使用你的 OpenAI 账号额度",
+        hint: "连接后将自动配置 GPT Image，无需手动设置",
+        connectedHint: "已就绪，可直接生成 PPT",
         availableModels: "可用模型",
         selectModel: "选择模型...",
         loadingModels: "正在加载可用模型...",
@@ -208,7 +209,7 @@ const settingsI18n = {
         textReasoning: "Text Reasoning Mode", imageReasoning: "Image Reasoning Mode",
         baiduOcr: "Baidu Configuration", serviceTest: "Service Test", lazyllmConfig: "LazyLLM Provider Configuration",
         vendorApiKeys: "Vendor API Key Configuration",
-        advancedSettings: "Advanced Settings",
+        advancedSettings: "Advanced: use your own API keys",
         elevenlabs: "ElevenLabs Text-to-Speech",
         about: "About"
       },
@@ -225,9 +226,9 @@ const settingsI18n = {
         close: "Close",
       },
       openaiOAuth: {
-        title: "OpenAI Account",
-        description: "Log in with your OpenAI account via OAuth to use OpenAI models (e.g. GPT Image) without entering an API key",
-        loginBtn: "Login with OpenAI",
+        title: "ChatGPT Account",
+        description: "Connect your ChatGPT account to generate slides with GPT Image — no API key needed",
+        loginBtn: "Sign in with ChatGPT",
         disconnectBtn: "Disconnect",
         connected: "Connected",
         disconnected: "Not connected",
@@ -237,7 +238,8 @@ const settingsI18n = {
         connectFailed: "Connection failed",
         disconnectFailed: "Disconnect failed",
         disconnectSuccess: "OpenAI account disconnected",
-        hint: "When connected, select Codex as the provider in model configuration above to use your OpenAI account credits",
+        hint: "GPT Image is configured automatically once connected — no manual setup needed",
+        connectedHint: "You're all set — start generating slides right away",
         availableModels: "Available Models",
         selectModel: "Select a model...",
         loadingModels: "Loading available models...",
@@ -481,7 +483,7 @@ const initialFormData = {
   enable_image_quality_control: false,
   max_description_workers: 5,
   max_image_workers: 8,
-  output_language: 'zh' as OutputLanguage,
+  output_language: 'en' as OutputLanguage,
   // 推理模式配置（分别控制文本和图像）
   enable_text_reasoning: false,
   text_thinking_budget: 1024,
@@ -529,7 +531,7 @@ const GlobalVendorKeyInput: React.FC<{
     ? t('settings.fields.vendorApiKeySet', { length: keyLength })
     : t('settings.fields.vendorApiKeyPlaceholder', { vendor: vendorLabel });
   return (
-    <div className="pl-3 border-l-2 border-amber-300 dark:border-amber-600">
+    <div className="pl-3 border-l border-gray-200 dark:border-border-primary">
       <Input
         label={t('settings.fields.vendorApiKey', { vendor: vendorLabel })}
         type="password"
@@ -590,7 +592,7 @@ export const SettingsAbout: React.FC<{ t: SettingsTranslator }> = ({ t }) => {
   return (
     <>
       <div className="pt-4 border-t border-gray-200 dark:border-border-primary">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-3 flex items-center">
+        <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-3 flex items-center">
           <Info size={20} />
           <span className="ml-2">{t('settings.sections.about')}</span>
         </h2>
@@ -653,7 +655,7 @@ export const SettingsAbout: React.FC<{ t: SettingsTranslator }> = ({ t }) => {
                 )}
                 <p className={updateInfo.update_available
                   ? 'text-xl font-semibold text-orange-600 dark:text-orange-400'
-                  : 'text-xl font-semibold text-gray-900 dark:text-foreground-primary'
+                  : 'font-display text-xl font-semibold text-gray-900 dark:text-foreground-primary'
                 }>
                   {formatUpdateMessage(t, updateInfo)}
                 </p>
@@ -695,7 +697,7 @@ const formDataFromSettings = (data: SettingsType): typeof initialFormData => {
     mineru_api_base: data.mineru_api_base || '',
     mineru_token: '',
     image_caption_model: data.image_caption_model || '',
-    output_language: data.output_language || 'zh',
+    output_language: data.output_language || 'en',
     enable_text_reasoning: data.enable_text_reasoning || false,
     text_thinking_budget: data.text_thinking_budget || 1024,
     enable_image_reasoning: data.enable_image_reasoning || false,
@@ -1548,7 +1550,7 @@ export const Settings: React.FC = () => {
 
         {/* Gemini/OpenAI 提供商：显示 API Key，固定 Base URL 的提供商隐藏 Base URL 输入 */}
         {isApiKeyProvider && (
-          <div className="space-y-3 pl-3 border-l-2 border-banana-300 dark:border-banana-600">
+          <div className="space-y-3 pl-3 border-l border-gray-200 dark:border-border-primary">
             {!isFixedApiBaseProvider && (
               <Input
                 label={t('settings.fields.perModelApiBaseUrl')}
@@ -1583,7 +1585,7 @@ export const Settings: React.FC = () => {
           || sourceValue === 'volcengine'
           || (!sourceValue && ['openai', 'volcengine'].includes(formData.ai_provider_format))
         ) && (
-          <div className="pl-3 border-l-2 border-banana-300 dark:border-banana-600">
+          <div className="pl-3 border-l border-gray-200 dark:border-border-primary">
             <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
               {t('settings.fields.imageApiProtocol')}
             </label>
@@ -1610,7 +1612,7 @@ export const Settings: React.FC = () => {
             ? t('settings.fields.vendorApiKeySet', { length: keyLength })
             : t('settings.fields.vendorApiKeyPlaceholder', { vendor: vendorLabel });
           return (
-            <div className="pl-3 border-l-2 border-amber-300 dark:border-amber-600">
+            <div className="pl-3 border-l border-gray-200 dark:border-border-primary">
               <Input
                 label={t('settings.fields.vendorApiKey', { vendor: vendorLabel })}
                 type="password"
@@ -1646,9 +1648,107 @@ export const Settings: React.FC = () => {
       <ToastContainer />
       {ConfirmDialog}
       <div className="space-y-8">
+        {/* ChatGPT 账号 — hero, chemin recommandé */}
+        <div className="rounded-2xl border border-gray-200/70 dark:border dark:border-border-primary bg-white dark:bg-background-secondary shadow-sm dark:shadow-none p-5 md:p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Link2 size={18} className="text-banana-600 dark:text-banana flex-shrink-0" />
+            <h2 className="font-display text-subhead font-semibold text-gray-900 dark:text-foreground-primary">
+              {t('settings.openaiOAuth.title')}
+            </h2>
+          </div>
+          <p className="text-meta text-gray-500 dark:text-foreground-tertiary mb-4">
+            {t('settings.openaiOAuth.description')}
+          </p>
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${settings?.openai_oauth_connected ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+              <div>
+                <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">
+                  {settings?.openai_oauth_connected ? t('settings.openaiOAuth.connected') : t('settings.openaiOAuth.disconnected')}
+                </span>
+                {settings?.openai_oauth_connected && settings?.openai_oauth_account_id && (
+                  <span className="ml-2 text-sm text-gray-500 dark:text-foreground-tertiary">
+                    ({settings.openai_oauth_account_id})
+                  </span>
+                )}
+              </div>
+            </div>
+            {settings?.openai_oauth_connected ? (
+              <button
+                onClick={handleOAuthDisconnect}
+                className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-foreground-tertiary hover:text-red-600 dark:hover:text-red-400 transition-colors self-start sm:self-auto"
+              >
+                {t('settings.openaiOAuth.disconnectBtn')}
+              </button>
+            ) : (
+              <button
+                onClick={handleOAuthLogin}
+                disabled={oauthConnecting}
+                className="px-5 py-2.5 text-sm font-semibold text-black bg-banana-500 hover:bg-banana-600 rounded-lg transition-colors disabled:opacity-50 shadow-sm self-start sm:self-auto"
+              >
+                {oauthConnecting ? t('settings.openaiOAuth.connecting') : t('settings.openaiOAuth.loginBtn')}
+              </button>
+            )}
+          </div>
+
+          <p className="mt-3 text-xs text-gray-500 dark:text-foreground-tertiary">
+            {settings?.openai_oauth_connected ? t('settings.openaiOAuth.connectedHint') : t('settings.openaiOAuth.hint')}
+          </p>
+
+          {!settings?.openai_oauth_connected && (
+            <div className="mt-3">
+              <button
+                onClick={() => setManualCallbackOpen(v => !v)}
+                className="text-xs text-gray-400 dark:text-foreground-tertiary hover:text-gray-600 dark:hover:text-foreground-secondary hover:underline transition-colors"
+              >
+                {t('settings.openaiOAuth.manualCallbackLabel')}
+              </button>
+              {manualCallbackOpen && (
+                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mb-2">{t('settings.openaiOAuth.manualCallbackHint')}</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={manualCallbackUrl}
+                      onChange={(e) => setManualCallbackUrl(e.target.value)}
+                      placeholder={t('settings.openaiOAuth.manualCallbackPlaceholder')}
+                      className="flex-1 px-3 py-1.5 text-xs border border-gray-300 dark:border-border-primary rounded-md bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary placeholder-gray-400"
+                    />
+                    <button
+                      onClick={handleManualCallback}
+                      disabled={manualCallbackSubmitting || !manualCallbackUrl.trim()}
+                      className="px-3 py-1.5 text-xs font-medium text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50"
+                    >
+                      {t('settings.openaiOAuth.manualCallbackSubmit')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 高级：使用你自己的 API Key（折叠区域，默认关闭） */}
+        <div className="border-t border-gray-200 dark:border-border-primary pt-2">
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen(!advancedOpen)}
+            className="w-full flex items-center justify-between px-0 py-3 text-left hover:opacity-80 transition-opacity"
+          >
+            <span className="text-sm font-medium text-gray-500 dark:text-foreground-tertiary">
+              {t('settings.sections.advancedSettings')}
+            </span>
+            <ChevronDown
+              size={16}
+              className={`text-gray-400 dark:text-foreground-tertiary transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {advancedOpen && (
+            <div className="pb-4 space-y-8 animate-slide-in-up">
         {/* 默认 API 配置区块 */}
         <div data-testid="global-api-config-section">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-1 flex items-center">
+          <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-1 flex items-center">
             <Key size={20} />
             <span className="ml-2">{t('settings.sections.apiConfig')}</span>
           </h2>
@@ -1679,7 +1779,7 @@ export const Settings: React.FC = () => {
 
             {/* Gemini/OpenAI: API Key；固定 Base URL 的提供商隐藏 Base URL 输入 */}
             {API_KEY_PROVIDERS.has(formData.ai_provider_format) && (
-              <div className="space-y-3 pl-3 border-l-2 border-banana-300 dark:border-banana-600">
+              <div className="space-y-3 pl-3 border-l border-gray-200 dark:border-border-primary">
                 {!FIXED_BASE_URL_PROVIDERS.has(formData.ai_provider_format) && (
                   <>
                     <Input
@@ -1716,7 +1816,7 @@ export const Settings: React.FC = () => {
           </div>
 
           {usesVolcengineCampaignPromo ? (
-            <div className="mt-3 pl-4 border-l-4 border-amber-300 dark:border-amber-600">
+            <div className="mt-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <a href={volcengineAgentPlansUrl} target="_blank" rel="noopener noreferrer" className="shrink-0">
                   <img
@@ -1778,7 +1878,7 @@ export const Settings: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="mt-3 pl-4 border-l-4 border-blue-300 dark:border-blue-600">
+            <div className="mt-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
               <p className="text-sm text-gray-700 dark:text-foreground-secondary">
                 {t('settings.apiKeyTip.before')}
                 <a href={AIHUBMIX_AFFILIATE_URL} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline font-medium">{t('settings.apiKeyTip.linkLabel')}</a>
@@ -1789,7 +1889,7 @@ export const Settings: React.FC = () => {
 
           {/* API Key 获取指南 */}
           {!usesVolcengineCampaignPromo && (
-            <div className="mt-2 pl-4 border-l-4 border-blue-300 dark:border-blue-600">
+            <div className="mt-2 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
               <p className="text-sm font-medium text-gray-800 dark:text-foreground-primary flex items-center gap-1.5 mb-2">
                 <HelpCircle size={15} className="text-blue-500" />
                 {t(`${activeApiKeyHelpKey}.title`)}
@@ -1825,7 +1925,7 @@ export const Settings: React.FC = () => {
 
         {/* 模型配置区块 */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
+          <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
             <FileText size={20} />
             <span className="ml-2">{t('settings.sections.modelConfig')}</span>
           </h2>
@@ -1842,7 +1942,7 @@ export const Settings: React.FC = () => {
             section.title !== t('settings.sections.imageReasoning')
           ).map((section) => (
             <div key={section.title}>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
+              <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
                 {section.icon}
                 <span className="ml-2">{section.title}</span>
               </h2>
@@ -1853,99 +1953,6 @@ export const Settings: React.FC = () => {
           ))}
         </div>
 
-        {/* 高级设置（折叠区域） */}
-        <div className="border-t border-gray-200 dark:border-border-primary pt-2">
-          <button
-            type="button"
-            onClick={() => setAdvancedOpen(!advancedOpen)}
-            className="w-full flex items-center justify-between px-0 py-3 text-left hover:opacity-80 transition-opacity"
-          >
-            <span className="text-lg font-semibold text-gray-900 dark:text-foreground-primary">
-              {t('settings.sections.advancedSettings')}
-            </span>
-            <ChevronDown
-              size={20}
-              className={`text-gray-500 dark:text-foreground-tertiary transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`}
-            />
-          </button>
-          {advancedOpen && (
-            <div className="pb-4 space-y-8">
-              {/* OpenAI OAuth 连接区块 */}
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-1 flex items-center">
-                  <Link2 size={20} />
-                  <span className="ml-2">{t('settings.openaiOAuth.title')}</span>
-                </h2>
-                <p className="text-sm text-gray-500 dark:text-foreground-tertiary mb-4">{t('settings.openaiOAuth.description')}</p>
-                <div className="p-4 border border-gray-200 dark:border-border-primary rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-2.5 h-2.5 rounded-full ${settings?.openai_oauth_connected ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
-                      <div>
-                        <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">
-                          {settings?.openai_oauth_connected ? t('settings.openaiOAuth.connected') : t('settings.openaiOAuth.disconnected')}
-                        </span>
-                        {settings?.openai_oauth_connected && settings?.openai_oauth_account_id && (
-                          <span className="ml-2 text-sm text-gray-500 dark:text-foreground-tertiary">
-                            ({settings.openai_oauth_account_id})
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      {settings?.openai_oauth_connected ? (
-                        <button
-                          onClick={handleOAuthDisconnect}
-                          className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                        >
-                          {t('settings.openaiOAuth.disconnectBtn')}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={handleOAuthLogin}
-                          disabled={oauthConnecting}
-                          className="px-4 py-2 text-sm font-medium text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50"
-                        >
-                          {oauthConnecting ? t('settings.openaiOAuth.connecting') : t('settings.openaiOAuth.loginBtn')}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <p className="mt-3 text-xs text-gray-500 dark:text-foreground-tertiary">{t('settings.openaiOAuth.hint')}</p>
-                  {!settings?.openai_oauth_connected && (
-                    <div className="mt-3">
-                      <button
-                        onClick={() => setManualCallbackOpen(v => !v)}
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                      >
-                        {t('settings.openaiOAuth.manualCallbackLabel')}
-                      </button>
-                      {manualCallbackOpen && (
-                        <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                          <p className="text-xs text-amber-700 dark:text-amber-300 mb-2">{t('settings.openaiOAuth.manualCallbackHint')}</p>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={manualCallbackUrl}
-                              onChange={(e) => setManualCallbackUrl(e.target.value)}
-                              placeholder={t('settings.openaiOAuth.manualCallbackPlaceholder')}
-                              className="flex-1 px-3 py-1.5 text-xs border border-gray-300 dark:border-border-primary rounded-md bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary placeholder-gray-400"
-                            />
-                            <button
-                              onClick={handleManualCallback}
-                              disabled={manualCallbackSubmitting || !manualCallbackUrl.trim()}
-                              className="px-3 py-1.5 text-xs font-medium text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50"
-                            >
-                              {t('settings.openaiOAuth.manualCallbackSubmit')}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {/* 并发性能配置 + 推理模式 */}
               {settingsSections.filter((section) =>
                 section.title === t('settings.sections.performanceConfig') ||
@@ -1953,7 +1960,7 @@ export const Settings: React.FC = () => {
                 section.title === t('settings.sections.imageReasoning')
               ).map((section) => (
                 <div key={section.title}>
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
+                  <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-4 flex items-center">
                     {section.icon}
                     <span className="ml-2">{section.title}</span>
                   </h2>
@@ -1968,14 +1975,14 @@ export const Settings: React.FC = () => {
 
         {/* 服务测试区 */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-2 flex items-center">
+          <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-foreground-primary mb-2 flex items-center">
             <FileText size={20} />
             <span className="ml-2">{t('settings.serviceTest.title')}</span>
           </h2>
           <p className="text-sm text-gray-500 dark:text-foreground-tertiary">
             {t('settings.serviceTest.description')}
           </p>
-          <div className="pl-4 border-l-4 border-yellow-300 dark:border-yellow-600">
+          <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
             <p className="text-sm text-gray-700 dark:text-foreground-secondary">
               💡 {t('settings.serviceTest.tip')}
             </p>
@@ -2138,7 +2145,7 @@ export const SettingsPage: React.FC = () => {
                   {t('nav.backToHome')}
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-foreground-primary">{t('settings.title')}</h1>
+                  <h1 className="font-display text-heading font-bold text-gray-900 dark:text-foreground-primary">{t('settings.title')}</h1>
                   <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1">
                     {t('settings.subtitle')}
                   </p>

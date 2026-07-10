@@ -752,3 +752,276 @@ def test_refresh_401_logs_warning_and_clears_oauth(client, app, caplog):
         assert token is None
         assert settings.openai_oauth_access_token is None
         assert any('OpenAI OAuth token refresh failed' in r.message for r in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# External OAuth store fallback (~/.gptimage, ~/.codex) — priority & disconnect
+#
+# These patch utils.external_oauth_stores.* directly rather than touching real
+# files: settings.py's fallback is exercised in isolation here, while the file
+# I/O itself is covered by test_external_oauth_stores.py.
+# ---------------------------------------------------------------------------
+
+def _external_record(**overrides):
+    from utils.external_oauth_stores import ExternalOAuthRecord
+    defaults = dict(
+        access='ext-access-token', refresh='ext-refresh-token',
+        account_id='acct_ext', expires=None, store='irrelevant', format='gptimage',
+    )
+    defaults.update(overrides)
+    return ExternalOAuthRecord(**defaults)
+
+
+def test_get_openai_oauth_token_falls_back_to_external_when_db_empty(client, app):
+    """No DB token -> use whatever external store (gptimage/codex) is logged in."""
+    with app.app_context():
+        from models import Settings, db
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = None
+        db.session.commit()
+
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=_external_record()):
+            token = settings.get_openai_oauth_token()
+
+        assert token == 'ext-access-token'
+
+
+def test_get_openai_oauth_token_db_token_takes_priority_over_external(client, app):
+    """A DB token must win even if an external store also has one — external is never consulted."""
+    with app.app_context():
+        from datetime import timedelta
+        from models import Settings, db
+        from models.settings import _utcnow_naive
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = 'db-token'
+        settings.openai_oauth_refresh_token = 'db-refresh'
+        settings.openai_oauth_expires_at = _utcnow_naive() + timedelta(hours=1)
+        db.session.commit()
+
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=_external_record()) as mock_load:
+            token = settings.get_openai_oauth_token()
+
+        assert token == 'db-token'
+        mock_load.assert_not_called()
+
+
+def test_get_openai_oauth_token_refreshes_expiring_external_token(client, app):
+    """An expiring external token with a refresh token should be refreshed via the store helper."""
+    with app.app_context():
+        from models import Settings, db
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = None
+        db.session.commit()
+
+        expiring = _external_record()
+        refreshed = _external_record(access='ext-access-refreshed')
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=expiring):
+            with patch('utils.external_oauth_stores.is_expiring', return_value=True):
+                with patch('utils.external_oauth_stores.refresh_external_token', return_value=refreshed) as mock_refresh:
+                    token = settings.get_openai_oauth_token()
+
+        assert token == 'ext-access-refreshed'
+        mock_refresh.assert_called_once()
+
+
+def test_get_openai_oauth_token_external_disabled_flag_blocks_fallback(client, app):
+    """After an explicit disconnect, external stores must not be consulted at all."""
+    with app.app_context():
+        from models import Settings, db
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = None
+        settings.openai_oauth_external_disabled = True
+        db.session.commit()
+
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=_external_record()) as mock_load:
+            token = settings.get_openai_oauth_token()
+
+        assert token is None
+        mock_load.assert_not_called()
+
+
+def test_is_openai_oauth_connected_reflects_external_fallback(client, app):
+    with app.app_context():
+        from models import Settings, db
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = None
+        db.session.commit()
+
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=_external_record()):
+            assert settings.is_openai_oauth_connected() is True
+
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=None):
+            assert settings.is_openai_oauth_connected() is False
+
+
+def test_get_openai_oauth_account_id_reflects_external_fallback(client, app):
+    with app.app_context():
+        from models import Settings, db
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = None
+        db.session.commit()
+
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=_external_record(account_id='acct_ext_id')):
+            assert settings.get_openai_oauth_account_id() == 'acct_ext_id'
+
+
+def test_disconnect_openai_oauth_clears_db_sets_flag_and_blocks_external(client, app):
+    """disconnect_openai_oauth() must not touch any file — it only clears DB state
+    and sets the flag that makes the app stop consulting external stores."""
+    with app.app_context():
+        from datetime import timedelta
+        from models import Settings, db
+        from models.settings import _utcnow_naive
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = 'db-token'
+        settings.openai_oauth_refresh_token = 'db-refresh'
+        settings.openai_oauth_expires_at = _utcnow_naive() + timedelta(hours=1)
+        settings.openai_oauth_account_id = 'acct_db'
+        settings.openai_oauth_external_disabled = False
+        db.session.commit()
+
+        settings.disconnect_openai_oauth()
+        db.session.commit()
+
+        assert settings.openai_oauth_access_token is None
+        assert settings.openai_oauth_account_id is None
+        assert settings.openai_oauth_external_disabled is True
+
+        # Even though an external store is "available", disconnect must suppress it.
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=_external_record()) as mock_load:
+            assert settings.get_openai_oauth_token() is None
+            assert settings.is_openai_oauth_connected() is False
+        mock_load.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# apply_codex_defaults_if_untouched — boot-time server-side equivalent of the
+# frontend's applyCodexDefaultsIfUntouched (covers OAuth via DB *or* the
+# external ~/.gptimage / ~/.codex fallback from task #10 — the gap the
+# frontend-only version missed for desktop installs with no in-app login).
+# ---------------------------------------------------------------------------
+
+def test_apply_codex_defaults_when_db_connected_and_untouched(client, app):
+    with app.app_context():
+        from datetime import timedelta
+        from models import Settings, db
+        from models.settings import _utcnow_naive
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = 'db-token'
+        settings.openai_oauth_refresh_token = 'db-refresh'
+        settings.openai_oauth_expires_at = _utcnow_naive() + timedelta(hours=1)
+        settings.ai_provider_format = None
+        settings.text_model = None
+        settings.image_model = None
+        settings.api_key = None
+        db.session.commit()
+
+        changed = settings.apply_codex_defaults_if_untouched()
+
+        assert changed is True
+        assert settings.ai_provider_format == 'codex'
+        assert settings.text_model == 'gpt-5.5'
+        assert settings.image_model == 'gpt-image-2'
+
+
+def test_apply_codex_defaults_when_external_fallback_connected_and_untouched(client, app):
+    """The exact real-world gap: desktop app connected only via ~/.gptimage or
+    ~/.codex (no in-app OAuth token in DB), still gets Codex defaults at boot."""
+    with app.app_context():
+        from models import Settings, db
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = None
+        settings.ai_provider_format = None
+        settings.text_model = None
+        settings.image_model = None
+        settings.api_key = None
+        db.session.commit()
+
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=_external_record()):
+            changed = settings.apply_codex_defaults_if_untouched()
+
+        assert changed is True
+        assert settings.ai_provider_format == 'codex'
+        assert settings.text_model == 'gpt-5.5'
+        assert settings.image_model == 'gpt-image-2'
+
+
+def test_apply_codex_defaults_is_noop_when_user_configured_explicitly(client, app):
+    with app.app_context():
+        from datetime import timedelta
+        from models import Settings, db
+        from models.settings import _utcnow_naive
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = 'db-token'
+        settings.openai_oauth_refresh_token = 'db-refresh'
+        settings.openai_oauth_expires_at = _utcnow_naive() + timedelta(hours=1)
+        settings.ai_provider_format = 'volcengine'  # user explicitly chose something else
+        settings.text_model = None
+        settings.image_model = None
+        settings.api_key = None
+        db.session.commit()
+
+        changed = settings.apply_codex_defaults_if_untouched()
+
+        assert changed is False
+        assert settings.ai_provider_format == 'volcengine'
+        assert settings.text_model is None
+        assert settings.image_model is None
+
+
+def test_apply_codex_defaults_is_noop_when_not_connected(client, app):
+    with app.app_context():
+        from models import Settings, db
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = None
+        settings.ai_provider_format = None
+        settings.text_model = None
+        settings.image_model = None
+        settings.api_key = None
+        db.session.commit()
+
+        with patch('utils.external_oauth_stores.load_external_oauth', return_value=None):
+            changed = settings.apply_codex_defaults_if_untouched()
+
+        assert changed is False
+        assert settings.ai_provider_format is None
+
+
+def test_apply_codex_defaults_is_idempotent_second_call_is_noop(client, app):
+    """Once applied, a later boot must not re-clobber a subsequent explicit user choice."""
+    with app.app_context():
+        from datetime import timedelta
+        from models import Settings, db
+        from models.settings import _utcnow_naive
+
+        settings = Settings.get_settings()
+        settings.openai_oauth_access_token = 'db-token'
+        settings.openai_oauth_refresh_token = 'db-refresh'
+        settings.openai_oauth_expires_at = _utcnow_naive() + timedelta(hours=1)
+        settings.ai_provider_format = None
+        settings.text_model = None
+        settings.image_model = None
+        settings.api_key = None
+        db.session.commit()
+
+        assert settings.apply_codex_defaults_if_untouched() is True
+
+        # User then explicitly switches to something else.
+        settings.ai_provider_format = 'openai'
+        settings.text_model = 'gpt-4o'
+        db.session.commit()
+
+        assert settings.apply_codex_defaults_if_untouched() is False
+        assert settings.ai_provider_format == 'openai'
+        assert settings.text_model == 'gpt-4o'

@@ -255,20 +255,20 @@ def _format_requirements(requirements: str, context: str = "outline") -> str:
 def get_default_output_language() -> str:
     """获取环境变量中配置的默认输出语言"""
     from config import Config
-    return getattr(Config, 'OUTPUT_LANGUAGE', 'zh')
+    return getattr(Config, 'OUTPUT_LANGUAGE', 'en')
 
 
 def get_language_instruction(language: str = None) -> str:
     """获取语言限制指令文本"""
     lang = language if language else get_default_output_language()
-    config = LANGUAGE_CONFIG.get(lang, LANGUAGE_CONFIG['zh'])
+    config = LANGUAGE_CONFIG.get(lang, LANGUAGE_CONFIG['en'])
     return config['instruction']
 
 
 def get_ppt_language_instruction(language: str = None) -> str:
     """获取PPT文字语言限制指令"""
     lang = language if language else get_default_output_language()
-    config = LANGUAGE_CONFIG.get(lang, LANGUAGE_CONFIG['zh'])
+    config = LANGUAGE_CONFIG.get(lang, LANGUAGE_CONFIG['en'])
     return config['ppt_text']
 
 

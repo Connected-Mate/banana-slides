@@ -212,3 +212,16 @@ def test_desktop_backend_repairs_old_settings_schema_before_update(tmp_path):
             assert value == 1
     finally:
         _stop_backend(proc)
+
+
+def test_repair_specs_cover_all_settings_model_columns():
+    """Every column on the Settings model must exist in repair_specs so desktop
+    databases created by older builds get patched (desktop mode never runs alembic)."""
+    from models.settings import Settings
+    from desktop_bootstrap import repair_desktop_settings_schema
+    import inspect as pyinspect
+
+    source = pyinspect.getsource(repair_desktop_settings_schema)
+    model_columns = {c.name for c in Settings.__table__.columns}
+    missing = {c for c in model_columns if c != "id" and f"'{c}'" not in source}
+    assert not missing, f"Settings columns missing from repair_specs: {sorted(missing)}"

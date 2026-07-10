@@ -554,7 +554,7 @@ def export_video(project_id):
         generate_narration = data.get('generate_narration', True)
         enable_ken_burns = data.get('enable_ken_burns', False)
         include_no_image_pages = data.get('include_no_image_pages', False)
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'en'))
         presentation_topic = data.get('presentation_topic') or project.idea_prompt or ''
         narration_config = normalize_narration_generation_config(
             data.get('narration_config'),

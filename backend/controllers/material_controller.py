@@ -51,7 +51,7 @@ def _generate_image_caption(filepath: str) -> str:
         image = Image.open(filepath)
         image.thumbnail((1024, 1024), Image.Resampling.LANCZOS)
 
-        output_lang = current_app.config.get('OUTPUT_LANGUAGE', 'zh')
+        output_lang = current_app.config.get('OUTPUT_LANGUAGE', 'en')
         if output_lang == 'en':
             prompt = "Please provide a short description of the main content of this image. Return only the description text without any other explanation."
         else:

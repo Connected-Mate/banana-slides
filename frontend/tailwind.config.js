@@ -7,6 +7,20 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // Display: Bricolage Grotesque — headings, hero, brand
+        display: ['"Bricolage Grotesque"', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+        // UI/body: Schibsted Grotesk — everything else
+        sans: ['"Schibsted Grotesk"', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+      },
+      // Échelle 5 crans, ratio >=1.25, rem fixes (app UI, pas de clamp fluide)
+      fontSize: {
+        'meta': ['0.75rem', { lineHeight: '1.5', letterSpacing: '0.01em' }],
+        'body': ['1rem', { lineHeight: '1.6' }],
+        'subhead': ['1.375rem', { lineHeight: '1.4' }],
+        'heading': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
+        'display': ['3.5rem', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
+      },
       colors: {
         // 品牌色 - 使用 CSS 变量
         'banana': {

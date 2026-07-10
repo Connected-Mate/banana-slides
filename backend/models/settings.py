@@ -82,6 +82,9 @@ class Settings(db.Model):
     openai_oauth_refresh_token = db.Column(db.Text, nullable=True)
     openai_oauth_expires_at = db.Column(db.DateTime, nullable=True)
     openai_oauth_account_id = db.Column(db.String(100), nullable=True)
+    # True once the user has explicitly disconnected: stop reusing shared external
+    # logins (~/.gptimage, ~/.codex) until they reconnect. See disconnect_openai_oauth().
+    openai_oauth_external_disabled = db.Column(db.Boolean, nullable=False, default=False)
 
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
@@ -195,7 +198,7 @@ class Settings(db.Model):
             'elevenlabs_api_key_length': len(elevenlabs_api_key) if elevenlabs_api_key else 0,
             'elevenlabs_voice_id': self.elevenlabs_voice_id or '',
             'openai_oauth_connected': self.is_openai_oauth_connected(),
-            'openai_oauth_account_id': self.openai_oauth_account_id if self.is_openai_oauth_connected() else None,
+            'openai_oauth_account_id': self.get_openai_oauth_account_id() if self.is_openai_oauth_connected() else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -259,25 +262,100 @@ class Settings(db.Model):
             return {}
 
     def get_openai_oauth_token(self):
-        """Return a valid OAuth access token, or None if not connected / expired without refresh."""
-        if not self.openai_oauth_access_token:
+        """Return a valid OAuth access token.
+
+        Priority: our own DB token first; if we have none, fall back to whichever
+        external OAuth store (~/.gptimage/auth.json, then ~/.codex/auth.json) is
+        already logged in — unless the user explicitly disconnected (see
+        disconnect_openai_oauth). Returns None if nothing usable is found.
+        """
+        if self.openai_oauth_access_token:
+            if self.openai_oauth_expires_at:
+                now = _utcnow_naive()
+                if self.openai_oauth_expires_at < now + _OAUTH_EXPIRY_MARGIN:
+                    if self.openai_oauth_refresh_token:
+                        return self._refresh_openai_oauth()
+                    return None
+            return self.openai_oauth_access_token
+
+        record = self._load_external_oauth()
+        if not record:
             return None
-        if self.openai_oauth_expires_at:
-            now = _utcnow_naive()
-            if self.openai_oauth_expires_at < now + _OAUTH_EXPIRY_MARGIN:
-                if self.openai_oauth_refresh_token:
-                    return self._refresh_openai_oauth()
+        from utils.external_oauth_stores import is_expiring, refresh_external_token
+        if is_expiring(record):
+            if not record.refresh:
                 return None
-        return self.openai_oauth_access_token
+            record = refresh_external_token(record)
+            if not record:
+                return None
+        return record.access
 
     def is_openai_oauth_connected(self):
-        """Return whether stored OpenAI OAuth credentials can still be presented as connected."""
-        if not self.openai_oauth_access_token:
+        """Return whether an OpenAI OAuth token is usable — ours, or an external fallback."""
+        if self.openai_oauth_access_token:
+            if self.openai_oauth_expires_at:
+                now = _utcnow_naive()
+                if self.openai_oauth_expires_at < now and not self.openai_oauth_refresh_token:
+                    return False
+            return True
+
+        record = self._load_external_oauth()
+        if not record:
             return False
-        if self.openai_oauth_expires_at:
-            now = _utcnow_naive()
-            if self.openai_oauth_expires_at < now and not self.openai_oauth_refresh_token:
-                return False
+        from utils.external_oauth_stores import is_expiring
+        if is_expiring(record) and not record.refresh:
+            return False
+        return True
+
+    def get_openai_oauth_account_id(self):
+        """Return the connected account id — ours, or the external fallback's."""
+        if self.openai_oauth_access_token:
+            return self.openai_oauth_account_id
+        record = self._load_external_oauth()
+        return record.account_id if record else None
+
+    def _load_external_oauth(self):
+        """Look up an external OAuth record, unless the user disabled the fallback."""
+        if self.openai_oauth_external_disabled:
+            return None
+        from utils.external_oauth_stores import load_external_oauth
+        return load_external_oauth()
+
+    def apply_codex_defaults_if_untouched(self):
+        """Server-side counterpart of the frontend's applyCodexDefaultsIfUntouched.
+
+        A fresh install with no provider ever configured, but whose OpenAI OAuth
+        is connected (our own token, OR the external ~/.gptimage / ~/.codex
+        fallback — see get_openai_oauth_token), would otherwise sit on the
+        Gemini defaults with no GOOGLE_API_KEY and fail every generation. If
+        nothing has been explicitly configured, switch to Codex + gpt-5.5 /
+        gpt-image-2 so it works out of the box. Strict no-op the moment the
+        user has touched ai_provider_format, text_model, image_model, or
+        api_key — this must never override an explicit choice.
+
+        Returns True if it changed anything (caller should re-sync app.config).
+        """
+        if not self.is_openai_oauth_connected():
+            return False
+
+        from config import Config
+        untouched = (
+            self.ai_provider_format in (None, 'gemini')
+            and self.text_model in (None, Config.TEXT_MODEL)
+            and self.image_model in (None, Config.IMAGE_MODEL)
+            and self.api_key is None
+        )
+        if not untouched:
+            return False
+
+        self.ai_provider_format = 'codex'
+        self.text_model = 'gpt-5.5'
+        self.image_model = 'gpt-image-2'
+        db.session.commit()
+        logger.info(
+            "OpenAI OAuth connected with no provider configured — "
+            "defaulting to Codex (gpt-5.5 / gpt-image-2)"
+        )
         return True
 
     def clear_openai_oauth(self):
@@ -286,6 +364,17 @@ class Settings(db.Model):
         self.openai_oauth_refresh_token = None
         self.openai_oauth_expires_at = None
         self.openai_oauth_account_id = None
+
+    def disconnect_openai_oauth(self):
+        """User-initiated disconnect: clear our DB tokens AND stop falling back to
+        external OAuth stores. ~/.gptimage/auth.json and ~/.codex/auth.json are
+        logins shared with other tools (the Codex CLI, gptimage) — disconnecting
+        here must never delete those files, only stop *this app* from reusing them
+        until the user reconnects (a fresh login clears this implicitly, since a
+        DB token then takes priority again).
+        """
+        self.clear_openai_oauth()
+        self.openai_oauth_external_disabled = True
 
     def _refresh_openai_oauth(self):
         """Refresh the OpenAI OAuth token using the refresh token."""

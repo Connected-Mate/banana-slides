@@ -343,7 +343,7 @@ def generate_page_description(project_id, page_id):
         
         data = request.get_json() or {}
         force_regenerate = data.get('force_regenerate', False)
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'en'))
         detail_level = data.get('detail_level', 'default')
 
         # Check if already generated
@@ -433,7 +433,7 @@ def generate_page_image(project_id, page_id):
         data = request.get_json() or {}
         use_template = data.get('use_template', True)
         force_regenerate = data.get('force_regenerate', False)
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'en'))
         
         # Check if already generated
         if page.generated_image_path and not force_regenerate:
@@ -851,7 +851,7 @@ def regenerate_renovation_page(project_id, page_id):
             return bad_request("This endpoint is only for PPT renovation projects")
 
         data = request.get_json() or {}
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'en'))
         keep_layout = data.get('keep_layout', False)
 
         # Find the split PDF for this page
@@ -1012,7 +1012,7 @@ def generate_page_narration(project_id, page_id):
 
         data = request.get_json() or {}
         force_regenerate = data.get('force_regenerate', False)
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'en'))
 
         if page.narration_text and not force_regenerate:
             return bad_request("Narration already exists. Set force_regenerate=true to regenerate")
@@ -1096,7 +1096,7 @@ def generate_all_narrations(project_id):
 
         data = request.get_json() or {}
         force_regenerate = data.get('force_regenerate', False)
-        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'zh'))
+        language = data.get('language', current_app.config.get('OUTPUT_LANGUAGE', 'en'))
 
         pages = Page.query.filter_by(project_id=project_id).order_by(Page.order_index).all()
         if not pages:

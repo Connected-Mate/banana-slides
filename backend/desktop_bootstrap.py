@@ -47,6 +47,7 @@ def repair_desktop_settings_schema(db):
             'openai_oauth_refresh_token': 'TEXT',
             'openai_oauth_expires_at': 'DATETIME',
             'openai_oauth_account_id': 'VARCHAR(100)',
+            'openai_oauth_external_disabled': 'BOOLEAN NOT NULL DEFAULT 0',
             'created_at': 'DATETIME',
             'updated_at': 'DATETIME',
         },
