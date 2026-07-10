@@ -728,11 +728,11 @@ export const Home: React.FC = () => {
     <div className="min-h-screen bg-yellow-50/40 dark:bg-background-primary relative">
       {/* 导航栏 — web only, brand + History/Settings 为主，其余收进图标区 */}
       {!isDesktop && (
-      <nav className="relative z-50 h-16 bg-white/60 dark:bg-background-primary backdrop-blur-xl dark:backdrop-blur-none dark:border-b dark:border-border-primary">
+      <nav className="relative z-50 h-16 bg-white/95 dark:bg-background-primary dark:border-b dark:border-border-primary">
         <div className="max-w-5xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src={logoUrl} alt="蕉幻 Banana Slides" className="h-8 w-auto rounded-md object-contain" />
-            <span className="font-display text-subhead font-semibold text-gray-900 dark:text-white">
+            <span className="font-display text-subhead font-semibold text-gray-900 dark:text-foreground-primary">
               {i18n.language?.startsWith('zh') ? t('home.title') : 'Banana Slides'}
             </span>
           </div>
@@ -830,7 +830,7 @@ export const Home: React.FC = () => {
       <main className="relative max-w-3xl mx-auto px-3 md:px-4 py-10 md:py-16">
         {/* Hero 标题区 — 一个焦点：标题 + 输入框 + Generate */}
         <div className="text-center mb-8 md:mb-12">
-          <h1 className="font-display text-4xl md:text-display font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-white">
+          <h1 className="font-display text-4xl md:text-display font-semibold leading-[1.08] tracking-tight text-gray-900 dark:text-foreground-primary">
             {i18n.language?.startsWith('zh') ? t('home.title') : 'Banana Slides'}
           </h1>
           <p className="mt-3 text-body md:text-subhead text-gray-500 dark:text-foreground-tertiary max-w-md mx-auto">
@@ -910,7 +910,7 @@ export const Home: React.FC = () => {
                     <div className="flex items-center justify-center gap-3">
                       <FileText size={24} className="text-banana-600 dark:text-banana" />
                       <div className="text-left">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{renovationFile.name}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-foreground-primary">{renovationFile.name}</p>
                         <p className="text-xs text-gray-500 dark:text-foreground-tertiary">{(renovationFile.size / 1024 / 1024).toFixed(1)} MB</p>
                       </div>
                       <button
@@ -985,7 +985,7 @@ export const Home: React.FC = () => {
               onDocumentFiles={handleDocumentFiles}
               onSelectFromLibrary={() => setIsMaterialSelectorOpen(true)}
               rows={activeTab === 'idea' ? 4 : 8}
-              className="text-sm md:text-base border-2 border-gray-200 dark:border-border-primary dark:bg-background-tertiary dark:text-white focus-within:border-banana-400 dark:focus-within:border-banana transition-colors duration-200"
+              className="text-sm md:text-base border-2 border-gray-200 dark:border-border-primary dark:bg-background-tertiary dark:text-foreground-primary focus-within:border-banana-400 dark:focus-within:border-banana transition-colors duration-200"
               toolbarLeft={
                 <div className="flex items-center gap-1">
                   <button
@@ -1083,7 +1083,7 @@ export const Home: React.FC = () => {
             {showStyleOptions && (
               <div className="mt-4 space-y-4 animate-slide-in-up">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-body font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-body font-semibold text-gray-900 dark:text-foreground-primary">
                     {t('home.template.title')}
                   </h3>
                   {/* 无模板图模式开关 */}

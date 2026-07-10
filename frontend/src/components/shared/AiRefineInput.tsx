@@ -83,19 +83,19 @@ const AiRefineInputComponent: React.FC<AiRefineInputProps> = ({
   const isCompactMode = !title;
 
   return (
-    <div className={isCompactMode ? `group ${className}` : `group bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-3 md:p-4 border border-purple-200 ${className}`}>
+    <div className={isCompactMode ? `group ${className}` : `group bg-banana-50 dark:bg-background-secondary rounded-lg p-3 md:p-4 border border-banana-200 dark:border-border-primary ${className}`}>
       {/* 标题和历史按钮 - 仅非紧凑模式显示 */}
       {!isCompactMode && (
         <div className="flex items-center justify-between mb-2 md:mb-3">
           <div className="flex items-center gap-2">
-            <Sparkles size={16} className="text-purple-600 md:w-[18px] md:h-[18px]" />
+            <Sparkles size={16} className="text-banana-600 dark:text-banana md:w-[18px] md:h-[18px]" />
             <h3 className="text-xs md:text-sm font-semibold text-gray-800 dark:text-foreground-primary">{title}</h3>
             <span className="text-xs text-gray-500 dark:text-foreground-tertiary hidden sm:inline">{t('aiRefine.ctrlEnterSubmit')}</span>
           </div>
           {history.length > 0 && (
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
+              className="flex items-center gap-1 text-xs text-banana-600 dark:text-banana hover:text-banana-700 transition-colors"
             >
               <History size={14} />
               <span className="hidden sm:inline">{t('aiRefine.history')} ({history.length})</span>
@@ -108,12 +108,12 @@ const AiRefineInputComponent: React.FC<AiRefineInputProps> = ({
       
       {/* 历史记录展示 */}
       {showHistory && history.length > 0 && (
-        <div className={`${isCompactMode ? 'mb-2' : 'mb-3'} p-2 bg-white dark:bg-background-secondary rounded border ${isCompactMode ? 'border-gray-200 dark:border-border-primary shadow-sm dark:shadow-background-primary/30' : 'bg-white/60 border-purple-100'} max-h-32 overflow-y-auto`}>
+        <div className={`${isCompactMode ? 'mb-2' : 'mb-3'} p-2 bg-white dark:bg-background-secondary rounded border ${isCompactMode ? 'border-gray-200 dark:border-border-primary shadow-sm dark:shadow-background-primary/30' : 'border-banana-100 dark:border-border-primary'} max-h-32 overflow-y-auto`}>
           <div className="text-xs text-gray-500 dark:text-foreground-tertiary mb-1">{t('aiRefine.previousRequirements')}</div>
           <ul className="space-y-1">
             {history.map((req, idx) => (
               <li key={idx} className="text-xs text-gray-700 dark:text-foreground-secondary flex items-start gap-1">
-                <span className="text-purple-400 flex-shrink-0">{idx + 1}.</span>
+                <span className="text-banana-600 dark:text-banana flex-shrink-0">{idx + 1}.</span>
                 <span className="break-all">{req}</span>
               </li>
             ))}
@@ -125,11 +125,11 @@ const AiRefineInputComponent: React.FC<AiRefineInputProps> = ({
         {/* 紧凑模式下显示图标和历史按钮 */}
         {isCompactMode && (
           <>
-            <Sparkles size={16} className={`flex-shrink-0 transition-colors ${isSubmitting ? 'text-purple-500' : 'text-purple-600'}`} />
+            <Sparkles size={16} className={`flex-shrink-0 transition-colors ${isSubmitting ? 'text-banana-500 dark:text-banana' : 'text-banana-600 dark:text-banana'}`} />
             {history.length > 0 && (
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center gap-1 text-xs text-gray-500 dark:text-foreground-tertiary hover:text-purple-600 transition-colors flex-shrink-0"
+                className="flex items-center gap-1 text-xs text-gray-500 dark:text-foreground-tertiary hover:text-banana-600 dark:hover:text-banana transition-colors flex-shrink-0"
                 title={t('aiRefine.viewHistory', { count: history.length })}
               >
                 <History size={14} />
@@ -146,14 +146,14 @@ const AiRefineInputComponent: React.FC<AiRefineInputProps> = ({
             onChange={(e) => setRequirement(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className={`w-full px-3 py-1.5 text-sm border ${isCompactMode ? 'border-gray-200 dark:border-border-primary' : 'border-gray-300 dark:border-border-primary'} rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
-              isSubmitting ? 'animate-gradient-x bg-gradient-to-r from-purple-100 via-purple-200 to-purple-100 bg-[length:200%_100%]' : 'bg-white dark:bg-background-secondary'
+            className={`w-full px-3 py-1.5 text-sm border ${isCompactMode ? 'border-gray-200 dark:border-border-primary' : 'border-gray-300 dark:border-border-primary'} rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent transition-all ${
+              isSubmitting ? 'animate-gradient-x bg-gradient-to-r from-banana-100 via-banana-200 to-banana-100 bg-[length:200%_100%]' : 'bg-white dark:bg-background-secondary'
             }`}
             disabled={isSubmitting}
           />
           {isSubmitting && (
             <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-300/30 to-transparent animate-shimmer" 
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-banana-300/30 to-transparent animate-shimmer"
                    style={{ backgroundSize: '200% 100%' }} />
             </div>
           )}
@@ -166,7 +166,7 @@ const AiRefineInputComponent: React.FC<AiRefineInputProps> = ({
           className={`flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
             !requirement.trim() || isSubmitting
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-purple-500 text-white hover:bg-purple-600 active:scale-95'
+              : 'bg-banana-500 text-black hover:bg-banana-600 active:scale-95'
           } md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100`}
           title={t('aiRefine.submitTooltip')}
         >

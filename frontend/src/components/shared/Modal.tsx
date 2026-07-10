@@ -133,7 +133,7 @@ export const Modal: React.FC<ModalProps> = ({
               <h2
                 id="modal-title"
                 className={cn(
-                  'text-xl font-semibold text-gray-900 dark:text-white tracking-tight',
+                  'font-display text-xl font-semibold text-gray-900 dark:text-foreground-primary tracking-tight',
                   showCloseButton || headerActions ? 'pr-24' : ''
                 )}
               >
@@ -161,9 +161,9 @@ export const Modal: React.FC<ModalProps> = ({
                 'absolute z-20 group',
                 'w-9 h-9 flex items-center justify-center',
                 'rounded-xl',
-                'text-gray-400 dark:text-gray-500',
-                'hover:text-gray-600 dark:hover:text-gray-300',
-                'hover:bg-gray-100/80 dark:hover:bg-white/10',
+                'text-gray-400 dark:text-foreground-tertiary',
+                'hover:text-gray-600 dark:hover:text-foreground-secondary',
+                'hover:bg-gray-100/80 dark:hover:bg-background-hover',
                 'active:scale-95',
                 'transition-all duration-150',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-banana-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#1a1a24]',

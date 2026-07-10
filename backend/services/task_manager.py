@@ -320,6 +320,33 @@ def _compute_background_worker_target(description_workers: int, image_workers: i
     return max(8, int(description_workers) + int(image_workers) + 4)
 
 
+# Codex (ChatGPT OAuth) chokes on high image-generation concurrency — a single
+# account can't sustain the same parallel load as a dedicated API key. Cap it
+# independently of the user's configured MAX_IMAGE_WORKERS. Override via env.
+CODEX_MAX_IMAGE_WORKERS = int(os.getenv('CODEX_MAX_IMAGE_WORKERS', '2'))
+
+
+def _effective_image_provider_format() -> str:
+    """Resolve which provider format actually serves image generation.
+
+    Mirrors the source-resolution order used by
+    services.ai_providers.get_image_provider() (per-model IMAGE_MODEL_SOURCE,
+    else the global AI_PROVIDER_FORMAT) without requiring credentials — this
+    is only used to decide whether to cap concurrency, never to build a
+    provider or make a request.
+    """
+    try:
+        from flask import current_app
+        cfg = current_app.config if current_app else {}
+    except RuntimeError:
+        cfg = {}
+    source = cfg.get('IMAGE_MODEL_SOURCE') or os.getenv('IMAGE_MODEL_SOURCE')
+    if source:
+        return str(source).lower()
+    fmt = cfg.get('AI_PROVIDER_FORMAT') or os.getenv('AI_PROVIDER_FORMAT', 'gemini')
+    return str(fmt).lower()
+
+
 # Global task manager and resource limiters
 task_manager = TaskManager(max_workers=max(8, int(os.getenv('MAX_BACKGROUND_TASK_WORKERS', '16'))))
 image_resource_limiter = ResourceLimiter("image", int(os.getenv('MAX_IMAGE_WORKERS', '20')))
@@ -327,11 +354,28 @@ text_resource_limiter = ResourceLimiter("text", int(os.getenv('MAX_DESCRIPTION_W
 
 
 def sync_resource_limits(description_workers: int, image_workers: int):
-    """Apply the latest runtime settings to shared concurrency controls."""
+    """Apply the latest runtime settings to shared concurrency controls.
+
+    When the effective image provider is Codex, image worker concurrency is
+    capped at CODEX_MAX_IMAGE_WORKERS regardless of the configured
+    MAX_IMAGE_WORKERS — a single ChatGPT account can't sustain 20 parallel
+    image generations, and doing so caused connection-timeout cascades.
+    """
+    effective_image_workers = int(image_workers)
+    if _effective_image_provider_format() == 'codex':
+        capped = min(effective_image_workers, CODEX_MAX_IMAGE_WORKERS)
+        if capped != effective_image_workers:
+            logger.info(
+                "Image provider is Codex — capping image worker concurrency %d -> %d "
+                "(override via CODEX_MAX_IMAGE_WORKERS)",
+                effective_image_workers, capped,
+            )
+        effective_image_workers = capped
+
     task_manager.update_max_workers(
-        _compute_background_worker_target(description_workers, image_workers)
+        _compute_background_worker_target(description_workers, effective_image_workers)
     )
-    image_resource_limiter.update_capacity(image_workers)
+    image_resource_limiter.update_capacity(effective_image_workers)
     text_resource_limiter.update_capacity(description_workers)
 
 

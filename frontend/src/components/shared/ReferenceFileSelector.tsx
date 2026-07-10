@@ -595,7 +595,7 @@ export const ReferenceFileSelector: React.FC<ReferenceFileSelectorProps> = React
                     onClick={() => handleSelectFile(file)}
                     className={`
                       p-4 cursor-pointer transition-colors
-                      ${isSelected ? 'bg-banana-50 dark:bg-background-secondary border-l-4 border-l-banana-500' : 'hover:bg-gray-50 dark:hover:bg-background-hover'}
+                      ${isSelected ? 'bg-banana-50 dark:bg-background-hover' : 'hover:bg-gray-50 dark:hover:bg-background-hover'}
                       ${file.parse_status === 'failed' ? 'opacity-60' : ''}
                     `}
                   >

@@ -86,7 +86,7 @@ const previewI18n = {
       exportSelectedPages: "将导出选中的 {{count}} 页",
       regenerate: "重新生成", regenerating: "生成中...",
       editMode: "编辑模式", viewMode: "查看模式", page: "第 {{num}} 页",
-      projectSettings: "项目设置", changeTemplate: "更换模板", refresh: "刷新",
+      projectSettings: "项目设置", changeTemplate: "更换模板", refresh: "刷新", moreActions: "更多操作",
       switchToMulti: "转为多模板", switchToSingle: "转为单模板", templateSetup: "模板配置",
       batchGenerate: "批量生成图片 ({{count}})", generateSelected: "生成选中页面 ({{count}})",
       multiSelect: "多选", cancelMultiSelect: "取消多选", pagesUnit: "页",
@@ -218,7 +218,7 @@ const previewI18n = {
       regenerate: "Regenerate", regenerating: "Generating...",
       editMode: "Edit Mode", viewMode: "View Mode", page: "Page {{num}}",
       switchToMulti: "Switch to multi", switchToSingle: "Switch to single", templateSetup: "Template setup",
-      projectSettings: "Project Settings", changeTemplate: "Change Template", refresh: "Refresh",
+      projectSettings: "Project Settings", changeTemplate: "Change Template", refresh: "Refresh", moreActions: "More actions",
       batchGenerate: "Batch Generate Images ({{count}})", generateSelected: "Generate Selected ({{count}})",
       multiSelect: "Multi-select", cancelMultiSelect: "Cancel Multi-select", pagesUnit: " pages",
       noPages: "No pages yet", noPagesHint: "Please go back to editor to add content first", backToEdit: "Back to Editor",
@@ -294,6 +294,7 @@ import {
   Layers,
   RectangleHorizontal,
   LayoutTemplate,
+  MoreHorizontal,
 } from 'lucide-react';
 import { Button, IconButton, Loading, Modal, Textarea, useToast, useConfirm, MaterialSelector, ProjectSettingsModal, ExportTasksPanel, TextStyleSelector } from '@/components/shared';
 import { SwitchToSingleModeDialog } from '@/components/template/SwitchToSingleModeDialog';
@@ -480,6 +481,8 @@ export const SlidePreview: React.FC = () => {
   const isEditingTemplateStyle = useRef(false); // 跟踪用户是否正在编辑风格描述
   const lastProjectId = useRef<string | null>(null); // 跟踪上一次的项目ID
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
+  // Menu "More" — regroupe les actions secondaires du header (peu fréquentes) pour désencombrer la toolbar
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   // 素材生成模态开关（模块本身可复用，这里只是示例入口）
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   // 素材选择器模态开关
@@ -1693,15 +1696,6 @@ export const SlidePreview: React.FC = () => {
             <span className="font-display text-sm md:text-lg font-semibold truncate hidden sm:inline">{t('preview.title')}</span>
         </div>
         <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<Settings size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => setIsProjectSettingsOpen(true)}
-              className="hidden lg:inline-flex"
-            >
-              <span className="hidden xl:inline">{t('preview.projectSettings')}</span>
-            </Button>
             {currentProject?.template_mode === 'multi' ? (
               <>
                 <IconButton
@@ -1709,14 +1703,14 @@ export const SlidePreview: React.FC = () => {
                   label={t('preview.templateSetup')}
                   tooltipSide="bottom"
                   onClick={() => navigate(`/project/${projectId}/template-setup`)}
-                  className="hidden lg:inline-flex"
+                  className="hidden md:inline-flex"
                 />
                 <IconButton
                   icon={<RectangleHorizontal size={18} />}
                   label={t('preview.switchToSingle')}
                   tooltipSide="bottom"
                   onClick={() => setIsSwitchSingleOpen(true)}
-                  className="hidden lg:inline-flex"
+                  className="hidden md:inline-flex"
                 />
               </>
             ) : (
@@ -1725,27 +1719,50 @@ export const SlidePreview: React.FC = () => {
                 label={t('preview.switchToMulti')}
                 tooltipSide="bottom"
                 onClick={handleSwitchToMulti}
-                className="hidden lg:inline-flex"
+                className="hidden md:inline-flex"
               />
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<Upload size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => { setDraftTemplateStyle(templateStyle); setIsTemplateModalOpen(true); }}
-              className="hidden lg:inline-flex"
-            >
-              <span className="hidden xl:inline">{t('preview.changeTemplate')}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<ImagePlus size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => setIsMaterialModalOpen(true)}
-              className="hidden lg:inline-flex"
-            >
-              <span className="hidden xl:inline">{t('nav.materialGenerate')}</span>
-            </Button>
+            {/* Actions secondaires peu fréquentes — regroupées pour ne pas saturer la toolbar */}
+            <div className="relative hidden sm:block">
+              <IconButton
+                icon={<MoreHorizontal size={18} />}
+                label={t('preview.moreActions')}
+                tooltipSide="bottom"
+                active={showMoreMenu}
+                onClick={() => setShowMoreMenu(v => !v)}
+              />
+              {showMoreMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-elevated shadow-lg dark:shadow-none py-1">
+                    <button
+                      type="button"
+                      onClick={() => { setIsProjectSettingsOpen(true); setShowMoreMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-50 dark:hover:bg-background-hover transition-colors"
+                    >
+                      <Settings size={15} />
+                      {t('preview.projectSettings')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setDraftTemplateStyle(templateStyle); setIsTemplateModalOpen(true); setShowMoreMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-50 dark:hover:bg-background-hover transition-colors"
+                    >
+                      <Upload size={15} />
+                      {t('preview.changeTemplate')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setIsMaterialModalOpen(true); setShowMoreMenu(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-50 dark:hover:bg-background-hover transition-colors"
+                    >
+                      <ImagePlus size={15} />
+                      {t('nav.materialGenerate')}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
             <Button
               variant="secondary"
               size="sm"
@@ -2221,8 +2238,8 @@ export const SlidePreview: React.FC = () => {
                   />
                   <span className="text-sm">{t('preview.videoEnableKenBurns')}</span>
                   <span className="relative group">
-                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-600 text-[10px] text-gray-500 dark:text-gray-300 cursor-help">?</span>
-                    <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 px-2.5 py-1.5 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 dark:bg-background-hover text-[10px] text-gray-500 dark:text-foreground-secondary cursor-help">?</span>
+                    <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 px-2.5 py-1.5 text-xs text-white bg-gray-800 dark:bg-background-elevated dark:text-foreground-primary rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
                       {t('preview.videoKenBurnsTip')}
                     </span>
                   </span>

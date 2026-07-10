@@ -74,12 +74,12 @@ export const GithubBadge: React.FC = () => {
       title="View on GitHub"
     >
       {/* 左侧：GitHub Logo */}
-      <div className="flex items-center justify-center text-gray-700 dark:text-gray-200">
+      <div className="flex items-center justify-center text-gray-700 dark:text-foreground-primary">
         <Github size={36} />
       </div>
 
       {/* 右侧：上下结构 (Stars & Forks) */}
-      <div className="flex flex-col text-[10px] leading-none gap-1 font-medium text-gray-600 dark:text-gray-400">
+      <div className="flex flex-col text-[10px] leading-none gap-1 font-medium text-gray-600 dark:text-foreground-tertiary">
         {/* Stars */}
         <div className="flex items-center gap-1">
           <Star size={16} />

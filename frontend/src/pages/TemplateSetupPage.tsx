@@ -117,7 +117,7 @@ const i18n = {
 };
 
 const statusClass: Record<TemplateAsset['analysis_status'], string> = {
-  pending: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+  pending: 'bg-gray-100 text-gray-600 dark:bg-background-hover dark:text-foreground-secondary',
   processing: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   completed: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
   failed: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
@@ -400,7 +400,7 @@ export const TemplateSetupPage: React.FC = () => {
             </div>
 
             {templateAssets.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-gray-200 py-12 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+              <p className="rounded-xl border border-dashed border-gray-200 py-12 text-center text-sm text-gray-500 dark:border-border-primary dark:text-foreground-tertiary">
                 {t('ts.emptyLibrary')}
               </p>
             ) : (
@@ -414,7 +414,7 @@ export const TemplateSetupPage: React.FC = () => {
                         'rounded-xl border p-3',
                         asset.analysis_status === 'failed'
                           ? 'border-red-300 dark:border-red-700'
-                          : 'border-gray-200 dark:border-gray-700'
+                          : 'border-gray-200 dark:border-border-primary'
                       )}
                     >
                       <div className="flex gap-3">
@@ -426,7 +426,7 @@ export const TemplateSetupPage: React.FC = () => {
                         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                           <div className="flex items-center gap-2">
                             <input
-                              className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-xs font-medium text-gray-800 outline-none transition-colors hover:border-gray-200 hover:bg-white focus:border-banana-500 focus:bg-white dark:text-gray-100 dark:hover:border-gray-700 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
+                              className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-xs font-medium text-gray-800 outline-none transition-colors hover:border-gray-200 hover:bg-white focus:border-banana-500 focus:bg-white dark:text-foreground-primary dark:hover:border-border-primary dark:hover:bg-background-hover dark:focus:bg-background-hover"
                               placeholder={t('ts.labelPlaceholder')}
                               defaultValue={asset.user_label || ''}
                               onBlur={(e) => {
@@ -505,7 +505,7 @@ export const TemplateSetupPage: React.FC = () => {
               {t('ts.pages')}
             </h2>
             {pages.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-gray-200 py-12 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+              <p className="rounded-xl border border-dashed border-gray-200 py-12 text-center text-sm text-gray-500 dark:border-border-primary dark:text-foreground-tertiary">
                 {t('ts.emptyPages')}
               </p>
             ) : (
@@ -520,10 +520,10 @@ export const TemplateSetupPage: React.FC = () => {
                 return (
                   <div
                     key={pageId}
-                    className="rounded-xl border border-gray-200 p-3 dark:border-gray-700"
+                    className="rounded-xl border border-gray-200 p-3 dark:border-border-primary"
                   >
                     <div className="flex items-start gap-3">
-                      <span className="mt-0.5 shrink-0 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-300">
+                      <span className="mt-0.5 shrink-0 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-500 dark:bg-background-hover dark:text-foreground-secondary">
                         {idx + 1}
                       </span>
                       {asset ? (
@@ -533,7 +533,7 @@ export const TemplateSetupPage: React.FC = () => {
                           className="h-12 w-16 shrink-0 rounded-md object-cover"
                         />
                       ) : (
-                        <span className="flex h-12 w-16 shrink-0 items-center justify-center rounded-md border border-dashed border-gray-300 text-[10px] text-gray-400 dark:border-gray-600">
+                        <span className="flex h-12 w-16 shrink-0 items-center justify-center rounded-md border border-dashed border-gray-300 text-[10px] text-gray-400 dark:border-border-hover">
                           {t('ts.unconfirmed')}
                         </span>
                       )}
@@ -577,7 +577,7 @@ export const TemplateSetupPage: React.FC = () => {
                     {editingStyle && (
                       <div className="mt-3 flex items-start gap-2">
                         <textarea
-                          className="min-h-[44px] flex-1 resize-y rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 outline-none focus:border-banana-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                          className="min-h-[44px] flex-1 resize-y rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 outline-none focus:border-banana-500 dark:border-border-primary dark:bg-background-secondary dark:text-foreground-primary"
                           placeholder={t('ts.stylePlaceholder')}
                           value={styleDraft}
                           onChange={(e) => setStyleDraft(e.target.value)}

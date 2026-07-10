@@ -28,14 +28,14 @@ export default {
           light: 'var(--banana-yellow-light)',
           dark: 'var(--banana-yellow-dark)',
           pale: 'var(--banana-yellow-pale)',
-          // 保留静态色用于渐变等特殊场景
-          50: '#FFF9E6',
-          100: '#FFE44D',
-          200: '#FFD93D',
-          300: '#FFD21F',
-          400: '#FFCA00',
-          500: '#FFD700',
-          600: '#FFC700',
+          // 保留静态色用于渐变等特殊场景 — OKLCH, même teinte (H90) que les tokens
+          50: 'oklch(97% 0.03 90)',
+          100: 'oklch(90% 0.09 90)',
+          200: 'oklch(85% 0.13 90)',
+          300: 'oklch(82% 0.15 90)',
+          400: 'oklch(80% 0.16 90)',
+          500: 'oklch(78% 0.17 90)',
+          600: 'oklch(70% 0.18 90)',
         },
         // 背景色 - 语义化 token
         'background': {
@@ -70,7 +70,7 @@ export default {
         'panel': '16px',
       },
       boxShadow: {
-        'yellow': '0 4px 12px rgba(255, 215, 0, 0.3)',
+        'yellow': '0 4px 12px oklch(78% 0.17 90 / 0.3)',
         'sm': '0 1px 2px rgba(0,0,0,0.05)',
         'md': '0 4px 6px rgba(0,0,0,0.07)',
         'lg': '0 10px 15px rgba(0,0,0,0.1)',

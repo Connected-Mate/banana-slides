@@ -26,9 +26,11 @@ export function useTheme() {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(THEME_KEY) as Theme | null;
-      return stored || 'system';
+      // Défaut app = sombre (pas 'system') — cohérent avec usage soirée/deadline
+      // et les slides générées, sombres. Miroir du script anti-FOUC dans index.html.
+      return stored || 'dark';
     }
-    return 'system';
+    return 'dark';
   });
 
   const setTheme = useCallback((newTheme: Theme) => {

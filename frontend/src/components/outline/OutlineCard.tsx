@@ -194,7 +194,7 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
                 <button
                   onClick={handleSave}
                   disabled={isUploading}
-                  className="px-3 py-1.5 text-sm bg-banana-500 text-black dark:text-white rounded-lg hover:bg-banana-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-sm bg-banana-500 text-black rounded-lg hover:bg-banana-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Check size={16} className="inline mr-1" />
                   {t('common.save')}

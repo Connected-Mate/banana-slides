@@ -281,3 +281,19 @@ class TestCodexSSEFailure:
         })
         with pytest.raises(ValueError, match="rate limited by plan"):
             list(CodexTextProvider._iter_sse_text(resp))
+
+
+# ---------------------------------------------------------------------------
+# (connect, read) timeout tuple
+# ---------------------------------------------------------------------------
+
+class TestCodexTextTimeout:
+
+    def test_default_timeout_is_connect_read_tuple(self):
+        assert _codex._DEFAULT_TIMEOUT == (30, 300)
+
+    def test_post_with_retry_posts_with_timeout_tuple(self):
+        ok = _make_ok_response()
+        with patch.object(_codex.http_requests, "post", return_value=ok) as mock_post:
+            _provider()._post_with_retry({"model": "test"})
+        assert mock_post.call_args.kwargs["timeout"] == (30, 300)

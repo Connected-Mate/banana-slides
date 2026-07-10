@@ -1662,7 +1662,7 @@ export const Settings: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${settings?.openai_oauth_connected ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+              <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${settings?.openai_oauth_connected ? 'bg-green-500' : 'bg-gray-300 dark:bg-background-hover'}`} />
               <div>
                 <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">
                   {settings?.openai_oauth_connected ? t('settings.openaiOAuth.connected') : t('settings.openaiOAuth.disconnected')}
@@ -1718,7 +1718,7 @@ export const Settings: React.FC = () => {
                     <button
                       onClick={handleManualCallback}
                       disabled={manualCallbackSubmitting || !manualCallbackUrl.trim()}
-                      className="px-3 py-1.5 text-xs font-medium text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-md hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:opacity-50"
+                      className="px-3 py-1.5 text-xs font-medium text-white bg-gray-900 dark:bg-foreground-primary dark:text-background-primary rounded-md hover:bg-gray-800 dark:hover:opacity-90 transition-colors disabled:opacity-50"
                     >
                       {t('settings.openaiOAuth.manualCallbackSubmit')}
                     </button>

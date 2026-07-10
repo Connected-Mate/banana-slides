@@ -227,7 +227,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                         <button type="button" className="p-1 -m-1 rounded-full focus:outline-none focus:ring-2 focus:ring-banana-500">
                           <HelpCircle size={16} className="text-gray-400 dark:text-foreground-tertiary cursor-help" />
                         </button>
-                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-10 pointer-events-none">
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-2 bg-gray-900 dark:bg-background-elevated text-white dark:text-foreground-primary text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all z-10 pointer-events-none">
                           {t('projectSettings.aspectRatioHelp')}
                         </div>
                       </div>
@@ -316,7 +316,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       {isSavingTemplateStyle ? t('shared.saving') : t('projectSettings.saveStyleDescription')}
                     </Button>
                   </div>
-                  <div className="pl-4 border-l-4 border-blue-300 dark:border-blue-600">
+                  <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary">
                       💡 <strong>{t('projectSettings.tip')}：</strong>{t('projectSettings.styleTip')}
                     </p>
@@ -406,7 +406,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       </label>
                     ))}
                   </div>
-                  <div className="pl-4 border-l-4 border-yellow-300 dark:border-yellow-600 flex items-start gap-2">
+                  <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 flex items-start gap-2">
                     <AlertTriangle size={16} className="text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary">
                       <strong>{t('projectSettings.tip')}：</strong>{t('projectSettings.costTip')}
@@ -432,7 +432,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       </div>
                     </div>
                   </label>
-                  <div className="pl-4 border-l-4 border-yellow-300 dark:border-yellow-600 flex items-start gap-2">
+                  <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 flex items-start gap-2">
                     <AlertTriangle size={16} className="text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary">
                       <strong>{t('projectSettings.tip')}：</strong>{t('projectSettings.iconSubjectExtractionTip')}
@@ -461,7 +461,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       </div>
                     </div>
                   </label>
-                  <div className="pl-4 border-l-4 border-red-300 dark:border-red-600 flex items-start gap-2">
+                  <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-start gap-2">
                     <AlertTriangle size={16} className="text-red-700 dark:text-red-400 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-700 dark:text-foreground-secondary">
                       <strong>{t('common.warning')}：</strong>{t('projectSettings.allowPartialResultWarning')}

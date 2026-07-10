@@ -23,8 +23,9 @@ logger = logging.getLogger(__name__)
 _CODEX_BASE_URL = "https://chatgpt.com/backend-api/codex"
 _RESPONSES_ENDPOINT = f"{_CODEX_BASE_URL}/responses"
 
-# Default timeout for HTTP requests (seconds)
-_DEFAULT_TIMEOUT = 120
+# (connect, read) timeout — a scalar timeout only bounds the read, and a stalled
+# write on a slow/congested connection would otherwise hang indefinitely.
+_DEFAULT_TIMEOUT = (30, 300)
 
 # Default model when none is passed explicitly. Override with CODEX_TEXT_MODEL
 # if OpenAI rotates the subscription model name.

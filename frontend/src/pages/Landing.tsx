@@ -96,14 +96,14 @@ export const Landing: React.FC = () => {
       <nav className="relative z-50 w-full px-6 py-6 flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
           <img src={logoUrl} alt="Logo" className="w-8 h-8 md:w-10 md:h-10 object-contain rounded-lg shadow-sm" />
-          <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+          <span className="font-display text-xl md:text-2xl font-bold text-gray-900 dark:text-foreground-primary">
             Banana Slides
           </span>
         </div>
         <div className="flex items-center gap-4">
           <button
             onClick={() => i18n.changeLanguage(i18n.language?.startsWith('zh') ? 'en' : 'zh')}
-            className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
+            className="text-sm font-medium text-gray-600 dark:text-foreground-tertiary hover:text-black dark:hover:text-foreground-primary transition-colors px-3 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-background-hover"
           >
             {i18n.language?.startsWith('zh') ? 'EN' : '中'}
           </button>
@@ -121,7 +121,7 @@ export const Landing: React.FC = () => {
       {/* Hero 区域 */}
       <main className="flex-1 relative z-10 flex flex-col justify-center max-w-7xl mx-auto px-6 py-12 lg:py-20 text-center">
         <div className="space-y-8 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 text-sm font-medium mx-auto backdrop-blur-sm shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-background-secondary border border-gray-200 dark:border-border-primary text-gray-600 dark:text-foreground-secondary text-sm font-medium mx-auto shadow-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-banana-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-banana-500"></span>
@@ -129,9 +129,9 @@ export const Landing: React.FC = () => {
             {t('landing.hero.badge')}
           </div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-gray-900 dark:text-white leading-[1.1]">
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-gray-900 dark:text-foreground-primary leading-[1.1]">
             {t('landing.hero.title_start')}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-banana-500 via-orange-500 to-pink-500 px-2 relative inline-block">
+            <span className="text-banana-600 dark:text-banana px-2 relative inline-block">
               {t('landing.hero.title_highlight')}
               <svg className="absolute w-full h-3 -bottom-1 left-0 text-banana-200 dark:text-banana-900/30 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
@@ -141,7 +141,7 @@ export const Landing: React.FC = () => {
             {t('landing.hero.title_end')}
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed font-light">
+          <p className="text-lg md:text-xl text-gray-500 dark:text-foreground-tertiary max-w-2xl mx-auto leading-relaxed font-light">
             {t('landing.hero.subtitle')}
           </p>
 
@@ -158,7 +158,7 @@ export const Landing: React.FC = () => {
               href="https://github.com/Anionex/banana-slides"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-white/10 transition-all duration-200 hover:shadow-md"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white dark:bg-background-secondary border border-gray-200 dark:border-border-primary text-gray-700 dark:text-foreground-primary font-medium hover:bg-gray-50 dark:hover:bg-background-hover transition-all duration-200 hover:shadow-md"
             >
               <Github size={20} />
               GitHub
@@ -166,20 +166,20 @@ export const Landing: React.FC = () => {
           </div>
 
           {/* 案例展示区域 (Carousel) */}
-          <div className="relative mt-20 mx-auto max-w-5xl rounded-2xl overflow-hidden shadow-2xl border border-gray-200/50 dark:border-white/10 bg-white dark:bg-gray-900 animate-float-slow group">
+          <div className="relative mt-20 mx-auto max-w-5xl rounded-2xl overflow-hidden shadow-2xl border border-gray-200/50 dark:border-border-primary bg-white dark:bg-background-secondary animate-float-slow group">
             {/* 顶部标题栏模拟 */}
-            <div className="h-8 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center px-4 gap-2">
+            <div className="h-8 bg-gray-50 dark:bg-background-tertiary border-b border-gray-100 dark:border-border-primary flex items-center px-4 gap-2">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-red-400"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
               </div>
-              <div className="flex-1 text-center text-xs text-gray-400 dark:text-gray-500 font-mono">
+              <div className="flex-1 text-center text-xs text-gray-400 dark:text-foreground-tertiary font-mono">
                 {t(`help.showcaseTitles.${showcaseKeys[currentShowcase].titleKey}`)}
               </div>
             </div>
 
-            <div className="relative aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden">
+            <div className="relative aspect-video bg-gray-100 dark:bg-background-tertiary overflow-hidden">
                {showcaseKeys.map((showcase, idx) => (
                 <img 
                   key={idx}
@@ -193,13 +193,13 @@ export const Landing: React.FC = () => {
               
               {/* 左右切换按钮 */}
               <button 
-                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-black/50 text-gray-800 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-lg backdrop-blur-sm"
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-black/50 text-gray-800 dark:text-foreground-primary opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-lg"
                 onClick={() => setCurrentShowcase((prev) => (prev === 0 ? showcaseKeys.length - 1 : prev - 1))}
               >
                 <ChevronLeft size={24} />
               </button>
               <button 
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-black/50 text-gray-800 dark:text-white opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-lg backdrop-blur-sm"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/80 dark:bg-black/50 text-gray-800 dark:text-foreground-primary opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-lg"
                 onClick={() => setCurrentShowcase((prev) => (prev + 1) % showcaseKeys.length)}
               >
                 <ChevronRight size={24} />
@@ -225,12 +225,12 @@ export const Landing: React.FC = () => {
       </main>
 
       {/* 特性区域 */}
-      <div className="relative z-10 bg-white dark:bg-black/20">
+      <div className="relative z-10 bg-white dark:bg-background-primary">
         {features.map((feature, idx) => (
           <section 
             key={idx} 
             className={`min-h-[80vh] flex items-center py-24 ${
-              idx % 2 === 0 ? 'bg-gray-50/50 dark:bg-white/5' : 'bg-white dark:bg-transparent'
+              idx % 2 === 0 ? 'bg-gray-50/50 dark:bg-background-secondary' : 'bg-white dark:bg-transparent'
             }`}
           >
             <div className="max-w-7xl mx-auto px-6 w-full">
@@ -242,10 +242,10 @@ export const Landing: React.FC = () => {
                   <div className={`inline-flex p-3 rounded-2xl ${feature.bg} shadow-sm`}>
                     {feature.icon}
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+                  <h2 className="font-display text-3xl md:text-4xl font-bold text-gray-900 dark:text-foreground-primary">
                     {t(`help.features.${feature.key}.title`)}
                   </h2>
-                  <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                  <p className="text-lg text-gray-600 dark:text-foreground-secondary leading-relaxed">
                     {t(`help.features.${feature.key}.description`)}
                   </p>
                   
@@ -254,7 +254,7 @@ export const Landing: React.FC = () => {
                     {(t(`help.features.${feature.key}.details`, { returnObjects: true }) as string[])?.map((detail: string, i: number) => (
                       <li key={i} className="flex items-start gap-3">
                         <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-banana-500 shrink-0" />
-                        <span className="text-gray-600 dark:text-gray-400 font-medium">{detail}</span>
+                        <span className="text-gray-600 dark:text-foreground-tertiary font-medium">{detail}</span>
                       </li>
                     ))}
                   </ul>
@@ -262,7 +262,7 @@ export const Landing: React.FC = () => {
 
                 {/* 视觉区域 */}
                 <div className="flex-1 w-full max-w-lg lg:max-w-none">
-                  <div className={`aspect-square rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-white/10 ${feature.bg} bg-opacity-30 dark:bg-opacity-10 backdrop-blur-sm flex items-center justify-center relative group hover:scale-[1.02] transition-transform duration-500`}>
+                  <div className={`aspect-square rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-border-primary ${feature.bg} bg-opacity-30 dark:bg-opacity-10 flex items-center justify-center relative group hover:scale-[1.02] transition-transform duration-500`}>
                     {/* 装饰背景 */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 dark:to-transparent" />
                     

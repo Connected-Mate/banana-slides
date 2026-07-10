@@ -183,7 +183,7 @@ const SortableFieldPill: React.FC<{
       {active && onToggleImagePrompt && (
         <span
           role="button"
-          className={`relative group/img ml-0.5 transition-colors ${inImagePrompt ? 'text-banana-500' : 'text-gray-300 dark:text-gray-600'}`}
+          className={`relative group/img ml-0.5 transition-colors ${inImagePrompt ? 'text-banana-500' : 'text-gray-300 dark:text-foreground-tertiary'}`}
           onClick={e => { e.stopPropagation(); onToggleImagePrompt(); }}
         >
           <ImageIcon size={10} />

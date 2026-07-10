@@ -52,7 +52,7 @@ export interface TemplatePickerModalProps {
 }
 
 const statusClass: Record<TemplateAsset['analysis_status'], string> = {
-  pending: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+  pending: 'bg-gray-100 text-gray-600 dark:bg-background-hover dark:text-foreground-secondary',
   processing: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
   completed: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
   failed: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
@@ -117,7 +117,7 @@ export const TemplatePickerModal: React.FC<TemplatePickerModalProps> = ({
         </div>
 
         {assets.length === 0 && (
-          <p className="py-10 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="py-10 text-center text-sm text-gray-500 dark:text-foreground-tertiary">
             {t('tpm.empty')}
           </p>
         )}
@@ -131,7 +131,7 @@ export const TemplatePickerModal: React.FC<TemplatePickerModalProps> = ({
                 'group relative flex aspect-[4/3] flex-col items-center justify-center rounded-xl border-2 border-dashed text-gray-400 transition-all',
                 !currentAssetId
                   ? 'border-banana-500 text-banana-600'
-                  : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                  : 'border-gray-200 hover:border-gray-300 dark:border-border-primary'
               )}
             >
               <Ban size={24} />
@@ -151,7 +151,7 @@ export const TemplatePickerModal: React.FC<TemplatePickerModalProps> = ({
                   'group relative flex aspect-[4/3] flex-col overflow-hidden rounded-xl border-2 transition-all',
                   selected
                     ? 'border-banana-500 ring-2 ring-banana-500/40'
-                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                    : 'border-gray-200 hover:border-gray-300 dark:border-border-primary'
                 )}
               >
                 <img

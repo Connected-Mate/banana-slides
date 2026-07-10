@@ -21,11 +21,11 @@ const sizeClass: Record<NonNullable<IconButtonProps['size']>, string> = {
 
 const variantClass: Record<NonNullable<IconButtonProps['variant']>, string> = {
   default:
-    'text-gray-500 hover:text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-700',
+    'text-gray-500 hover:text-gray-800 hover:bg-gray-100 dark:text-foreground-tertiary dark:hover:text-foreground-primary dark:hover:bg-background-hover',
   primary:
     'text-banana-600 hover:text-banana-700 hover:bg-banana-50 dark:text-banana-400 dark:hover:bg-banana-900/30',
   danger:
-    'text-gray-400 hover:text-red-600 hover:bg-red-50 dark:text-gray-500 dark:hover:text-red-400 dark:hover:bg-red-900/30',
+    'text-gray-400 hover:text-red-600 hover:bg-red-50 dark:text-foreground-tertiary dark:hover:text-red-400 dark:hover:bg-red-900/30',
 };
 
 /**
@@ -53,7 +53,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
         'inline-flex items-center justify-center rounded-lg transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-banana-500 disabled:cursor-not-allowed disabled:opacity-40',
         sizeClass[size],
         variantClass[variant],
-        active && 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
+        active && 'bg-gray-100 text-gray-800 dark:bg-background-hover dark:text-foreground-primary'
       )}
       {...props}
     >
@@ -66,7 +66,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
     <span
       role="tooltip"
       className={cn(
-        'pointer-events-none absolute left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 dark:bg-gray-700',
+        'pointer-events-none absolute left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 dark:bg-background-elevated dark:text-foreground-primary',
         tooltipSide === 'top' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
       )}
     >

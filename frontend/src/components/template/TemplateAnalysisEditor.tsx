@@ -167,9 +167,9 @@ export const TemplateAnalysisEditor: React.FC<TemplateAnalysisEditorProps> = ({
     }
   };
 
-  const labelCls = 'mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300';
+  const labelCls = 'mb-1 block text-xs font-medium text-gray-600 dark:text-foreground-secondary';
   const inputCls =
-    'w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-800 outline-none focus:border-banana-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100';
+    'w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-800 outline-none focus:border-banana-500 dark:border-border-primary dark:bg-background-secondary dark:text-foreground-primary';
 
   const renderRegions = (field: 'text_regions' | 'image_regions') => (
     <div className="space-y-2">
@@ -218,7 +218,7 @@ export const TemplateAnalysisEditor: React.FC<TemplateAnalysisEditorProps> = ({
         'space-y-3 rounded-xl border p-4',
         failed
           ? 'border-red-400 bg-red-50/50 dark:border-red-700 dark:bg-red-900/10'
-          : 'border-gray-200 dark:border-gray-700'
+          : 'border-gray-200 dark:border-border-primary'
       )}
     >
       {failed && (

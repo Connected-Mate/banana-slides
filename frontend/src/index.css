@@ -36,79 +36,95 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+/*
+ * Tokens OKLCH — teinte de marque H≈90 (banane), chroma neutre 0.006-0.01.
+ * Thème sombre = défaut app (voir index.html script anti-FOUC + useTheme.ts).
+ * Le thème clair (:root) reste un choix explicite secondaire.
+ */
 :root {
-  /* 主色 - 黄色系 */
-  --banana-yellow: #FFD700;
-  --banana-yellow-light: #FFE44D;
-  --banana-yellow-dark: #FFC700;
-  --banana-yellow-pale: #FFF9E6;
+  /* Accent banane — clair : plus sombre au repos (contraste sur blanc), s'éclaircit au survol */
+  --banana-yellow: oklch(78% 0.17 90);
+  --banana-yellow-light: oklch(84% 0.15 90);
+  --banana-yellow-dark: oklch(68% 0.18 90);
+  --banana-yellow-pale: oklch(96% 0.03 90);
 
-  /* 中性色 - 黑白灰 */
-  --black: #1A1A1A;
-  --black-80: #4A4A4A;
-  --black-60: #757575;
-  --black-10: #F5F5F5;
-  --white: #FFFFFF;
+  /* Neutres hérités (compat composants existants) */
+  --black: oklch(22% 0.006 90);
+  --black-80: oklch(40% 0.006 90);
+  --black-60: oklch(58% 0.006 90);
+  --black-10: oklch(96% 0.003 90);
+  --white: oklch(100% 0 0);
 
-  /* 功能色 */
-  --success: #52C41A;
-  --warning: #FAAD14;
-  --error: #FF4D4F;
-  --info: #1890FF;
+  /* Fonctionnels */
+  --success: oklch(62% 0.15 145);
+  --warning: oklch(75% 0.15 70);
+  --error: oklch(58% 0.20 25);
+  --info: oklch(60% 0.14 235);
 
-  /* 过渡 */
+  /* Transitions */
   --transition-fast: 150ms ease-in-out;
   --transition-base: 250ms ease-in-out;
   --transition-slow: 350ms ease-in-out;
 
-  /* 背景色 */
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F5F5F5;
-  --bg-tertiary: #FAFAFA;
-  --bg-elevated: #FFFFFF;
-  --bg-hover: #F5F5F5;
+  /* Surfaces — 3 niveaux max, tintées vers la marque */
+  --bg-primary: oklch(99% 0.003 90);
+  --bg-secondary: oklch(97% 0.004 90);
+  --bg-tertiary: oklch(98% 0.004 90);
+  --bg-elevated: oklch(100% 0 0);
+  --bg-hover: oklch(95% 0.005 90);
 
-  /* 文字色 */
-  --text-primary: #1A1A1A;
-  --text-secondary: #4A4A4A;
-  --text-tertiary: #757575;
+  /* Texte — hiérarchisé, jamais gris pur */
+  --text-primary: oklch(24% 0.006 90);
+  --text-secondary: oklch(44% 0.006 90);
+  --text-tertiary: oklch(58% 0.007 90);
 
-  /* 边框色 */
-  --border-primary: #E5E5E5;
-  --border-secondary: #F0F0F0;
-  --border-hover: #D4D4D4;
+  /* Bordures — fines, tintées */
+  --border-primary: oklch(90% 0.005 90);
+  --border-secondary: oklch(94% 0.004 90);
+  --border-hover: oklch(82% 0.008 90);
+
+  /* Focus ring — a11y, visible dans les deux thèmes */
+  --focus-ring: oklch(70% 0.17 90 / 0.55);
+  --shadow-color: 90deg 0.01 90;
 }
 
 .dark {
-  /* 主色 - 黄色系（深色模式下稍微调亮） */
-  --banana-yellow: #F5A623;
-  --banana-yellow-light: #FFD700;
-  --banana-yellow-dark: #E6930E;
-  --banana-yellow-pale: #2A2520;
+  /* Accent banane — sombre : s'assombrit légèrement au survol (repos déjà lumineux sur fond noir) */
+  --banana-yellow: oklch(80% 0.16 90);
+  --banana-yellow-light: oklch(86% 0.13 90);
+  --banana-yellow-dark: oklch(72% 0.17 90);
+  --banana-yellow-pale: oklch(26% 0.025 90);
 
-  /* 中性色 - 深色模式 */
-  --black: #F5F5F5;
-  --black-80: #D4D4D4;
-  --black-60: #8E8E8E;
-  --black-10: #1E1E24;
-  --white: #13131A;
+  --black: oklch(97% 0.004 90);
+  --black-80: oklch(84% 0.006 90);
+  --black-60: oklch(64% 0.008 90);
+  --black-10: oklch(20% 0.008 90);
+  --white: oklch(14% 0.008 90);
 
-  /* 背景色 */
-  --bg-primary: #13131A;
-  --bg-secondary: #1E1E24;
-  --bg-tertiary: #17171E;
-  --bg-elevated: #252530;
-  --bg-hover: #2E2E38;
+  --success: oklch(72% 0.15 145);
+  --warning: oklch(78% 0.14 70);
+  --error: oklch(68% 0.19 25);
+  --info: oklch(72% 0.13 235);
 
-  /* 文字色 */
-  --text-primary: #FFFFFF;
-  --text-secondary: #B0B0B0;
-  --text-tertiary: #6E6E6E;
+  /* Surfaces — quasi-noir chaud, 3 niveaux max */
+  --bg-primary: oklch(14% 0.008 90);
+  --bg-secondary: oklch(18% 0.009 90);
+  --bg-tertiary: oklch(16% 0.008 90);
+  --bg-elevated: oklch(23% 0.010 90);
+  --bg-hover: oklch(27% 0.011 90);
 
-  /* 边框色 */
-  --border-primary: #2E2E38;
-  --border-secondary: #252530;
-  --border-hover: #3E3E48;
+  /* Texte — hiérarchisé, jamais gris pur ni blanc pur */
+  --text-primary: oklch(96% 0.005 90);
+  --text-secondary: oklch(76% 0.008 90);
+  --text-tertiary: oklch(56% 0.009 90);
+
+  /* Bordures — fines, tintées, quasi invisibles au repos */
+  --border-primary: oklch(28% 0.010 90);
+  --border-secondary: oklch(24% 0.009 90);
+  --border-hover: oklch(38% 0.013 90);
+
+  --focus-ring: oklch(80% 0.16 90 / 0.6);
+  --shadow-color: 90deg 0.01 90;
 }
 
 * {
@@ -131,6 +147,13 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* Focus visible — a11y, cohérent partout, remplace les outline/ring ad hoc */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* 自定义滚动条 */

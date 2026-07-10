@@ -10,6 +10,20 @@
     <title>Banana Slides | AI-native PPT Generator</title>
   </head>
   <body>
+    <script>
+      // Applique le thème avant le premier paint pour éviter le flash clair→sombre.
+      // Défaut app = sombre (pas 'system') ; miroir de useTheme.ts.
+      (function () {
+        try {
+          var stored = localStorage.getItem('banana-slides-theme');
+          if (stored === 'light') return;
+          if (stored === 'system' && !window.matchMedia('(prefers-color-scheme: dark)').matches) return;
+          document.documentElement.classList.add('dark');
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

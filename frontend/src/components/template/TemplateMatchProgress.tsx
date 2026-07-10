@@ -48,7 +48,7 @@ export const TemplateMatchProgress: React.FC<TemplateMatchProgressProps> = ({ ta
     s.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
 
   return (
-    <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+    <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-4 dark:border-border-primary dark:bg-background-secondary">
       <div className="flex items-center gap-2 text-sm font-medium">
         {isRunning && <Loader2 size={16} className="animate-spin text-banana-600" />}
         {isDone && <CheckCircle2 size={16} className="text-green-600" />}
@@ -57,7 +57,7 @@ export const TemplateMatchProgress: React.FC<TemplateMatchProgressProps> = ({ ta
           className={cn(
             isDone && 'text-green-700 dark:text-green-400',
             isFailed && 'text-red-700 dark:text-red-400',
-            isRunning && 'text-gray-700 dark:text-gray-200'
+            isRunning && 'text-gray-700 dark:text-foreground-primary'
           )}
         >
           {isRunning && t('tmp.matching')}
@@ -67,7 +67,7 @@ export const TemplateMatchProgress: React.FC<TemplateMatchProgressProps> = ({ ta
       </div>
 
       {!isFailed && (
-        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-background-hover">
           <div
             className={cn(
               'h-full rounded-full transition-all duration-300',
@@ -78,7 +78,7 @@ export const TemplateMatchProgress: React.FC<TemplateMatchProgressProps> = ({ ta
         </div>
       )}
 
-      <div className="flex flex-wrap gap-x-3 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap gap-x-3 text-xs text-gray-500 dark:text-foreground-tertiary">
         <span>{fill(t('tmp.progress'), { completed, total })}</span>
         {failed > 0 && (
           <span className="text-red-500">{fill(t('tmp.failedPages'), { failed })}</span>

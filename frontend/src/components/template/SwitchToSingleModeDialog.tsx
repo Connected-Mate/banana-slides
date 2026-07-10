@@ -105,7 +105,7 @@ export const SwitchToSingleModeDialog: React.FC<SwitchToSingleModeDialogProps> =
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={t('ssm.title')} size="wide">
       <div className="space-y-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">{t('ssm.desc')}</p>
+        <p className="text-sm text-gray-500 dark:text-foreground-tertiary">{t('ssm.desc')}</p>
 
         <div className="flex items-center justify-between gap-2">
           <Button
@@ -117,7 +117,7 @@ export const SwitchToSingleModeDialog: React.FC<SwitchToSingleModeDialogProps> =
             {t('ssm.uploadNew')}
           </Button>
           {pendingFile && (
-            <span className="truncate text-xs text-gray-500 dark:text-gray-400">
+            <span className="truncate text-xs text-gray-500 dark:text-foreground-tertiary">
               {pendingFile.name}
             </span>
           )}
@@ -131,7 +131,7 @@ export const SwitchToSingleModeDialog: React.FC<SwitchToSingleModeDialogProps> =
         </div>
 
         {assets.length === 0 && !pendingFile && (
-          <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="py-8 text-center text-sm text-gray-500 dark:text-foreground-tertiary">
             {t('ssm.empty')}
           </p>
         )}
@@ -152,7 +152,7 @@ export const SwitchToSingleModeDialog: React.FC<SwitchToSingleModeDialogProps> =
                   'group relative flex aspect-[4/3] flex-col overflow-hidden rounded-xl border-2 transition-all',
                   selected
                     ? 'border-banana-500 ring-2 ring-banana-500/40'
-                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                    : 'border-gray-200 hover:border-gray-300 dark:border-border-primary'
                 )}
               >
                 <img
@@ -176,11 +176,11 @@ export const SwitchToSingleModeDialog: React.FC<SwitchToSingleModeDialogProps> =
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">
+          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-foreground-secondary">
             {t('ssm.styleLabel')}
           </label>
           <textarea
-            className="min-h-[60px] w-full resize-y rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-800 outline-none focus:border-banana-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+            className="min-h-[60px] w-full resize-y rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-800 outline-none focus:border-banana-500 dark:border-border-primary dark:bg-background-secondary dark:text-foreground-primary"
             placeholder={t('ssm.stylePlaceholder')}
             value={styleText}
             onChange={(e) => setStyleText(e.target.value)}

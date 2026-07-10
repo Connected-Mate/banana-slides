@@ -854,17 +854,17 @@ export const OutlineEditor: React.FC = () => {
                       <div className="animate-pulse">
                         <div className="bg-white dark:bg-background-secondary rounded-xl shadow-sm border border-gray-100 dark:border-border-primary p-4">
                         <div className="flex items-start gap-3">
-                          <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded mt-1" />
+                          <div className="w-5 h-5 bg-gray-200 dark:bg-background-hover rounded mt-1" />
                           <div className="flex-1 space-y-3">
                             <div className="flex items-center gap-2">
-                              <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
+                              <div className="h-4 w-12 bg-gray-200 dark:bg-background-hover rounded" />
                               <div className="h-4 w-16 bg-banana-100 dark:bg-banana-900/30 rounded" />
                             </div>
-                            <div className="h-5 w-2/3 bg-gray-200 dark:bg-gray-700 rounded" />
+                            <div className="h-5 w-2/3 bg-gray-200 dark:bg-background-hover rounded" />
                             <div className="space-y-2">
-                              <div className="h-3.5 w-full bg-gray-100 dark:bg-gray-800 rounded" />
-                              <div className="h-3.5 w-4/5 bg-gray-100 dark:bg-gray-800 rounded" />
-                              <div className="h-3.5 w-3/5 bg-gray-100 dark:bg-gray-800 rounded" />
+                              <div className="h-3.5 w-full bg-gray-100 dark:bg-background-elevated rounded" />
+                              <div className="h-3.5 w-4/5 bg-gray-100 dark:bg-background-elevated rounded" />
+                              <div className="h-3.5 w-3/5 bg-gray-100 dark:bg-background-elevated rounded" />
                             </div>
                           </div>
                         </div>

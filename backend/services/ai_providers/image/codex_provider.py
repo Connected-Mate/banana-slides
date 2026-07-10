@@ -28,12 +28,20 @@ logger = logging.getLogger(__name__)
 _CODEX_BASE_URL = "https://chatgpt.com/backend-api/codex"
 _RESPONSES_ENDPOINT = f"{_CODEX_BASE_URL}/responses"
 
-_DEFAULT_TIMEOUT = 180  # image generation can be slow
+# (connect, read) timeout — a scalar timeout only bounds the read, and a stalled
+# write on a slow/congested connection would otherwise hang indefinitely.
+_DEFAULT_TIMEOUT = (30, 300)
 
 # Outer Responses-API model that orchestrates the image_generation tool call.
 # Distinct from the image_generation tool's own `model` (e.g. gpt-image-2).
 # Override with CODEX_OUTER_MODEL if OpenAI rotates the subscription model name.
 _OUTER_MODEL = os.getenv('CODEX_OUTER_MODEL', 'gpt-5.5')
+
+# Full-resolution reference images encoded as PNG were a major contributor to
+# request timeouts against the Codex backend. Downscale to this many px on the
+# long side and re-encode as JPEG before sending.
+_MAX_REF_IMAGE_DIMENSION = int(os.getenv('CODEX_MAX_REF_IMAGE_DIMENSION', '1568'))
+_REF_IMAGE_JPEG_QUALITY = int(os.getenv('CODEX_REF_IMAGE_JPEG_QUALITY', '85'))
 
 # Client identifier sent to the backend. Matches the official Codex CLI.
 _ORIGINATOR = os.getenv('CODEX_ORIGINATOR', 'codex_cli_rs')
@@ -76,6 +84,45 @@ def _is_retryable_http_error(exc: BaseException) -> bool:
     )):
         return True
     return False
+
+
+def _downscale_and_encode_ref_image(img: Image.Image) -> tuple[str, dict]:
+    """Downscale a reference image to at most _MAX_REF_IMAGE_DIMENSION px on its
+    long side and encode as JPEG instead of full-resolution PNG.
+
+    Returns (data_url, stats) where stats carries before/after dimensions and
+    byte sizes for logging.
+    """
+    original_size = img.size
+    baseline_buf = io.BytesIO()
+    img.save(baseline_buf, format="PNG")
+    baseline_bytes = len(baseline_buf.getvalue())
+
+    working = img
+    if working.mode in ('RGBA', 'LA', 'P'):
+        # Flatten transparency onto white — JPEG has no alpha channel.
+        bg = Image.new('RGB', working.size, (255, 255, 255))
+        bg.paste(working, mask=working.split()[-1] if working.mode in ('RGBA', 'LA') else None)
+        working = bg
+    elif working.mode not in ('RGB', 'L'):
+        working = working.convert('RGB')
+
+    if max(working.size) > _MAX_REF_IMAGE_DIMENSION:
+        working = working.copy()
+        working.thumbnail((_MAX_REF_IMAGE_DIMENSION, _MAX_REF_IMAGE_DIMENSION), Image.Resampling.LANCZOS)
+
+    out_buf = io.BytesIO()
+    working.save(out_buf, format="JPEG", quality=_REF_IMAGE_JPEG_QUALITY)
+    out_bytes = out_buf.getvalue()
+
+    stats = {
+        'original_size': original_size,
+        'new_size': working.size,
+        'original_bytes': baseline_bytes,
+        'new_bytes': len(out_bytes),
+    }
+    b64 = base64.b64encode(out_bytes).decode('utf-8')
+    return f"data:image/jpeg;base64,{b64}", stats
 
 
 def _log_codex_retry(retry_state):
@@ -126,14 +173,18 @@ class CodexImageProvider(ImageProvider):
         content = []
         if ref_images:
             for img in ref_images:
-                buffered = io.BytesIO()
-                if img.mode in ('RGBA', 'LA', 'P'):
-                    bg = Image.new('RGB', img.size, (255, 255, 255))
-                    bg.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
-                    img = bg
-                img.save(buffered, format="PNG")
-                b64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
-                content.append({"type": "input_image", "image_url": f"data:image/png;base64,{b64}"})
+                data_url, stats = _downscale_and_encode_ref_image(img)
+                content.append({"type": "input_image", "image_url": data_url})
+                reduction_pct = (
+                    100 * (1 - stats['new_bytes'] / stats['original_bytes'])
+                    if stats['original_bytes'] else 0.0
+                )
+                logger.info(
+                    "Codex ref image: %dx%d (%d bytes PNG) -> %dx%d (%d bytes JPEG q%d), %.0f%% smaller",
+                    stats['original_size'][0], stats['original_size'][1], stats['original_bytes'],
+                    stats['new_size'][0], stats['new_size'][1], stats['new_bytes'],
+                    _REF_IMAGE_JPEG_QUALITY, reduction_pct,
+                )
         content.append({"type": "input_text", "text": prompt})
 
         return {

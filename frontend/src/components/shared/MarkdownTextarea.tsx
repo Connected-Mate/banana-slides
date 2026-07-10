@@ -133,7 +133,7 @@ function getDisplayName(alt: string, url: string): string {
 }
 
 const IMAGE_ICON = '<svg class="flex-shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>';
-const SPINNER_ICON = '<span class="inline-block w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin flex-shrink-0 dark:border-gray-300 dark:border-t-transparent"></span>';
+const SPINNER_ICON = '<span class="inline-block w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin flex-shrink-0 dark:border-foreground-secondary dark:border-t-transparent"></span>';
 
 function applyChipContent(chip: HTMLElement, seg: { alt: string; url: string; raw: string }, tooltips?: { edit: string; uploading: string }) {
   const uploading = isUploadingUrl(seg.url);
@@ -149,7 +149,7 @@ function applyChipContent(chip: HTMLElement, seg: { alt: string; url: string; ra
     'cursor-default select-none align-middle mx-0.5 transition-colors',
     uploading
       ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700'
-      : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600',
+      : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 dark:bg-background-hover dark:text-foreground-secondary dark:border-border-primary dark:hover:bg-background-elevated',
   ].join(' ');
   const displayName = getDisplayName(seg.alt, seg.url);
   chip.innerHTML = `${uploading ? SPINNER_ICON : IMAGE_ICON}<span style="max-width:150px" class="truncate">${escapeHtml(displayName)}</span>`;
@@ -660,7 +660,7 @@ export const MarkdownTextarea = forwardRef<MarkdownTextareaRef, MarkdownTextarea
 
           {/* Placeholder */}
           {isEmpty && placeholder && !isDragging && (
-            <div className="absolute top-0 left-0 right-0 px-4 py-3 text-gray-400 dark:text-gray-500 pointer-events-none select-none">
+            <div className="absolute top-0 left-0 right-0 px-4 py-3 text-gray-400 dark:text-foreground-tertiary pointer-events-none select-none">
               {placeholder}
             </div>
           )}

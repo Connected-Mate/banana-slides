@@ -57,7 +57,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               type="checkbox"
               checked={checkboxChecked}
               onChange={(e) => setCheckboxChecked(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600"
+              className="w-4 h-4 rounded border-gray-300 dark:border-border-hover"
             />
             <span className="text-sm text-gray-700 dark:text-foreground-secondary">{checkboxLabel}</span>
           </label>

@@ -253,3 +253,86 @@ class TestCodexSSEFailure:
         resp = self._resp_with_events({"type": "response.failed", "response": {}})
         with pytest.raises(ValueError, match="unknown backend error"):
             _provider()._parse_sse_for_image(resp)
+
+
+# ---------------------------------------------------------------------------
+# (connect, read) timeout tuple — a scalar timeout only bounds reads, letting a
+# stalled write hang indefinitely on a congested connection.
+# ---------------------------------------------------------------------------
+
+class TestCodexImageTimeout:
+
+    def test_default_timeout_is_connect_read_tuple(self):
+        assert _codex_img._DEFAULT_TIMEOUT == (30, 300)
+
+    def test_generate_image_posts_with_timeout_tuple(self):
+        ok = _make_ok_sse_response()
+        with patch.object(_codex_img.http_requests, "post", return_value=ok) as mock_post:
+            _provider().generate_image("a blue square")
+        assert mock_post.call_args.kwargs["timeout"] == (30, 300)
+
+
+# ---------------------------------------------------------------------------
+# Reference image downscale + JPEG re-encode — full-res PNG reference images
+# were a major contributor to request timeouts.
+# ---------------------------------------------------------------------------
+
+class TestDownscaleAndEncodeRefImage:
+
+    def test_large_image_is_downscaled_to_max_dimension(self):
+        from PIL import Image
+        big = Image.new("RGB", (3000, 2000), "blue")
+
+        data_url, stats = _codex_img._downscale_and_encode_ref_image(big)
+
+        assert stats["original_size"] == (3000, 2000)
+        assert max(stats["new_size"]) <= 1568
+        assert data_url.startswith("data:image/jpeg;base64,")
+
+    def test_downscale_significantly_reduces_payload_bytes(self):
+        from PIL import Image, ImageFilter
+        # Blurred noise = photographic texture (unlike a flat fill or sharp
+        # repeating pattern, real photos don't unfairly favor PNG's lossless
+        # compression) — this is what a real template reference photo looks
+        # like to a codec, at a size representative of a real upload.
+        noise = Image.effect_noise((3000, 2000), 60)
+        blurred = noise.filter(ImageFilter.GaussianBlur(radius=2))
+        big = Image.merge("RGB", (
+            blurred,
+            blurred.rotate(7, expand=False, fillcolor=128).resize((3000, 2000)),
+            blurred.rotate(-7, expand=False, fillcolor=128).resize((3000, 2000)),
+        ))
+
+        _, stats = _codex_img._downscale_and_encode_ref_image(big)
+
+        assert stats["new_bytes"] < stats["original_bytes"]
+        # Real-world payload reduction should be substantial, not marginal.
+        assert stats["new_bytes"] < stats["original_bytes"] * 0.5
+
+    def test_small_image_is_not_upscaled(self):
+        from PIL import Image
+        small = Image.new("RGB", (400, 300), "green")
+
+        data_url, stats = _codex_img._downscale_and_encode_ref_image(small)
+
+        assert stats["new_size"] == (400, 300)
+        assert data_url.startswith("data:image/jpeg;base64,")
+
+    def test_rgba_transparency_is_flattened_before_jpeg_encode(self):
+        from PIL import Image
+        rgba = Image.new("RGBA", (500, 500), (0, 0, 255, 128))
+
+        data_url, stats = _codex_img._downscale_and_encode_ref_image(rgba)
+
+        # Must not raise (JPEG has no alpha channel) and must produce a real image.
+        assert data_url.startswith("data:image/jpeg;base64,")
+        assert stats["new_size"] == (500, 500)
+
+    def test_build_payload_uses_downscaled_jpeg_for_ref_images(self):
+        from PIL import Image
+        big = Image.new("RGB", (3000, 2000), "red")
+
+        payload = _provider()._build_payload("a prompt", "16:9", ref_images=[big])
+
+        image_url = payload["input"][0]["content"][0]["image_url"]
+        assert image_url.startswith("data:image/jpeg;base64,")
