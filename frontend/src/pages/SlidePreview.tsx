@@ -298,6 +298,12 @@ import {
 } from 'lucide-react';
 import { Button, IconButton, Loading, Modal, Textarea, useToast, useConfirm, MaterialSelector, ProjectSettingsModal, ExportTasksPanel, TextStyleSelector } from '@/components/shared';
 import { SwitchToSingleModeDialog } from '@/components/template/SwitchToSingleModeDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { MaterialGeneratorModal } from '@/components/shared/MaterialGeneratorModal';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate } from '@/api/endpoints';
@@ -1724,44 +1730,39 @@ export const SlidePreview: React.FC = () => {
             )}
             {/* Actions secondaires peu fréquentes — regroupées pour ne pas saturer la toolbar */}
             <div className="relative hidden sm:block">
-              <IconButton
-                icon={<MoreHorizontal size={18} />}
-                label={t('preview.moreActions')}
-                tooltipSide="bottom"
-                active={showMoreMenu}
-                onClick={() => setShowMoreMenu(v => !v)}
-              />
-              {showMoreMenu && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowMoreMenu(false)} />
-                  <div className="absolute right-0 top-full mt-1 z-50 w-52 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-elevated shadow-lg dark:shadow-none py-1">
-                    <button
-                      type="button"
-                      onClick={() => { setIsProjectSettingsOpen(true); setShowMoreMenu(false); }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-50 dark:hover:bg-background-hover transition-colors"
-                    >
-                      <Settings size={15} />
-                      {t('preview.projectSettings')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setDraftTemplateStyle(templateStyle); setIsTemplateModalOpen(true); setShowMoreMenu(false); }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-50 dark:hover:bg-background-hover transition-colors"
-                    >
-                      <Upload size={15} />
-                      {t('preview.changeTemplate')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setIsMaterialModalOpen(true); setShowMoreMenu(false); }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-50 dark:hover:bg-background-hover transition-colors"
-                    >
-                      <ImagePlus size={15} />
-                      {t('nav.materialGenerate')}
-                    </button>
-                  </div>
-                </>
-              )}
+              <DropdownMenu open={showMoreMenu} onOpenChange={setShowMoreMenu}>
+                <DropdownMenuTrigger asChild>
+                  <IconButton
+                    icon={<MoreHorizontal size={18} />}
+                    label={t('preview.moreActions')}
+                    tooltipSide="bottom"
+                    active={showMoreMenu}
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem
+                    className="gap-2 text-gray-700 dark:text-foreground-secondary"
+                    onClick={() => setIsProjectSettingsOpen(true)}
+                  >
+                    <Settings size={15} />
+                    {t('preview.projectSettings')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="gap-2 text-gray-700 dark:text-foreground-secondary"
+                    onClick={() => { setDraftTemplateStyle(templateStyle); setIsTemplateModalOpen(true); }}
+                  >
+                    <Upload size={15} />
+                    {t('preview.changeTemplate')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="gap-2 text-gray-700 dark:text-foreground-secondary"
+                    onClick={() => setIsMaterialModalOpen(true)}
+                  >
+                    <ImagePlus size={15} />
+                    {t('nav.materialGenerate')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <Button
               variant="secondary"

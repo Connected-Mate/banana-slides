@@ -1,4 +1,5 @@
 import React from 'react';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/utils';
 import { useT } from '@/hooks/useT';
 import type { PageStatus } from '@/types';
@@ -33,7 +34,8 @@ interface StatusBadgeProps {
   status: PageStatus;
 }
 
-const statusClassNames: Record<PageStatus, string> = {
+/** Classes statut — inchangées, appliquées par-dessus ui/badge (adaptateur shadcn). */
+export const statusClassNames: Record<PageStatus, string> = {
   DRAFT: 'bg-gray-100 dark:bg-background-secondary text-gray-600 dark:text-foreground-tertiary',
   GENERATING_DESCRIPTION: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 animate-pulse',
   DESCRIPTION_GENERATED: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
@@ -57,17 +59,15 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   const t = useT(statusI18n);
   const className = statusClassNames[status];
   const labelKey = statusLabelKeys[status];
-  
+
   return (
-    <span
+    <Badge
+      variant="secondary"
       data-testid="status-badge"
       data-status={status}
-      className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium',
-        className
-      )}
+      className={cn('rounded border-transparent shadow-none font-medium', className)}
     >
       {t(labelKey)}
-    </span>
+    </Badge>
   );
 };

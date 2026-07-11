@@ -1,5 +1,9 @@
 import React from 'react';
+import { Input as UiInput } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/utils';
+
+/** Adaptateur shadcn — API historique préservée (label, error). Rendu ui/input + ui/label. */
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -15,17 +19,16 @@ export const Input: React.FC<InputProps> = ({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
+        <Label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
           {label}
-        </label>
+        </Label>
       )}
-      <input
+      <UiInput
         className={cn(
-          'w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary',
-          'focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent',
+          'h-10 px-4 rounded-lg text-base border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary',
           'placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-all',
           'text-gray-900 dark:text-foreground-primary',
-          error && 'border-red-500 focus:ring-red-500',
+          error && 'border-red-500 focus-visible:ring-red-500',
           className
         )}
         {...props}
@@ -36,4 +39,3 @@ export const Input: React.FC<InputProps> = ({
     </div>
   );
 };
-

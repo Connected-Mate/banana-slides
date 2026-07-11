@@ -127,6 +127,60 @@
   --shadow-color: 90deg 0.01 90;
 }
 
+/*
+ * shadcn/ui token bridge — variables consumed by src/components/ui/*.
+ * Values are raw OKLCH CHANNELS (no oklch() wrapper) so Tailwind can apply
+ * opacity modifiers via `oklch(var(--x) / <alpha-value>)` (see tailwind.config.js).
+ * Each channel triplet MIRRORS an existing app token — light = :root, dark = .dark.
+ * Never the shadcn zinc defaults: this is the banana/OKLCH system re-themed.
+ */
+@layer base {
+  :root {
+    --background: 99% 0.003 90;        /* = --bg-primary */
+    --foreground: 24% 0.006 90;        /* = --text-primary */
+    --card: 100% 0 0;                  /* = --bg-elevated */
+    --card-foreground: 24% 0.006 90;
+    --popover: 100% 0 0;               /* = --bg-elevated */
+    --popover-foreground: 24% 0.006 90;
+    --primary: 78% 0.17 90;            /* = --banana-yellow */
+    --primary-foreground: 22% 0.02 90; /* dark ink on banana */
+    --secondary: 97% 0.004 90;         /* = --bg-secondary */
+    --secondary-foreground: 24% 0.006 90;
+    --muted: 97% 0.004 90;             /* = --bg-secondary */
+    --muted-foreground: 44% 0.006 90;  /* = --text-secondary */
+    --accent: 95% 0.005 90;            /* = --bg-hover */
+    --accent-foreground: 24% 0.006 90;
+    --destructive: 58% 0.20 25;        /* = --error */
+    --destructive-foreground: 99% 0.003 90;
+    --border: 90% 0.005 90;            /* = --border-primary */
+    --input: 90% 0.005 90;             /* = --border-primary */
+    --ring: 78% 0.17 90;               /* = banana focus */
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 14% 0.008 90;
+    --foreground: 96% 0.005 90;
+    --card: 18% 0.009 90;              /* = --bg-secondary */
+    --card-foreground: 96% 0.005 90;
+    --popover: 23% 0.010 90;           /* = --bg-elevated */
+    --popover-foreground: 96% 0.005 90;
+    --primary: 80% 0.16 90;
+    --primary-foreground: 20% 0.02 90;
+    --secondary: 18% 0.009 90;
+    --secondary-foreground: 96% 0.005 90;
+    --muted: 18% 0.009 90;
+    --muted-foreground: 56% 0.009 90;  /* = --text-tertiary */
+    --accent: 27% 0.011 90;            /* = --bg-hover */
+    --accent-foreground: 96% 0.005 90;
+    --destructive: 68% 0.19 25;
+    --destructive-foreground: 96% 0.005 90;
+    --border: 28% 0.010 90;
+    --input: 28% 0.010 90;
+    --ring: 80% 0.16 90;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;

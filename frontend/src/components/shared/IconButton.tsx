@@ -1,5 +1,12 @@
 import React from 'react';
+import { Button as UiButton } from '@/components/ui/button';
 import { cn } from '@/utils';
+
+/**
+ * Adaptateur shadcn — API historique préservée (icon, label, variant, size,
+ * active, loading, tooltipSide). Bouton rendu par ui/button (variant ghost,
+ * size icon) ; tooltip hover conservé en CSS pur (pas de provider Radix requis).
+ */
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** Icon node (e.g. a lucide icon). */
@@ -28,11 +35,7 @@ const variantClass: Record<NonNullable<IconButtonProps['variant']>, string> = {
     'text-gray-400 hover:text-red-600 hover:bg-red-50 dark:text-foreground-tertiary dark:hover:text-red-400 dark:hover:bg-red-900/30',
 };
 
-/**
- * Light, square icon button with an elegant hover tooltip. Designed for compact
- * action clusters where text labels would create clutter.
- */
-export const IconButton: React.FC<IconButtonProps> = ({
+export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(({
   icon,
   label,
   variant = 'default',
@@ -43,14 +46,17 @@ export const IconButton: React.FC<IconButtonProps> = ({
   className,
   disabled,
   ...props
-}) => (
+}, ref) => (
   <span className={cn('group relative inline-flex', className)}>
-    <button
+    <UiButton
+      ref={ref}
       type="button"
+      variant="ghost"
+      size="icon"
       aria-label={label}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center rounded-lg transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-banana-500 disabled:cursor-not-allowed disabled:opacity-40',
+        'rounded-lg transition-colors duration-150 disabled:opacity-40',
         sizeClass[size],
         variantClass[variant],
         active && 'bg-gray-100 text-gray-800 dark:bg-background-hover dark:text-foreground-primary'
@@ -62,7 +68,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
       ) : (
         icon
       )}
-    </button>
+    </UiButton>
     <span
       role="tooltip"
       className={cn(
@@ -73,4 +79,6 @@ export const IconButton: React.FC<IconButtonProps> = ({
       {label}
     </span>
   </span>
-);
+));
+
+IconButton.displayName = 'IconButton';

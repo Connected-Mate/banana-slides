@@ -1,3 +1,5 @@
+import tailwindcssAnimate from 'tailwindcss-animate'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
@@ -37,27 +39,59 @@ export default {
           500: 'oklch(78% 0.17 90)',
           600: 'oklch(70% 0.18 90)',
         },
-        // 背景色 - 语义化 token
+        // 背景色 - 语义化 token (+ shadcn DEFAULT via OKLCH channels)
         'background': {
+          DEFAULT: 'oklch(var(--background) / <alpha-value>)',
           primary: 'var(--bg-primary)',
           secondary: 'var(--bg-secondary)',
           tertiary: 'var(--bg-tertiary)',
           elevated: 'var(--bg-elevated)',
           hover: 'var(--bg-hover)',
         },
-        // 文字色 - 语义化 token
+        // 文字色 - 语义化 token (+ shadcn DEFAULT)
         'foreground': {
-          DEFAULT: 'var(--text-primary)',
+          DEFAULT: 'oklch(var(--foreground) / <alpha-value>)',
           primary: 'var(--text-primary)',
           secondary: 'var(--text-secondary)',
           tertiary: 'var(--text-tertiary)',
         },
-        // 边框色 - 语义化 token
+        // 边框色 - 语义化 token (+ shadcn DEFAULT)
         'border': {
-          DEFAULT: 'var(--border-primary)',
+          DEFAULT: 'oklch(var(--border) / <alpha-value>)',
           primary: 'var(--border-primary)',
           secondary: 'var(--border-secondary)',
           hover: 'var(--border-hover)',
+        },
+        // shadcn/ui semantic colors — OKLCH channels + alpha support
+        'input': 'oklch(var(--input) / <alpha-value>)',
+        'ring': 'oklch(var(--ring) / <alpha-value>)',
+        'primary': {
+          DEFAULT: 'oklch(var(--primary) / <alpha-value>)',
+          foreground: 'oklch(var(--primary-foreground) / <alpha-value>)',
+        },
+        'secondary': {
+          DEFAULT: 'oklch(var(--secondary) / <alpha-value>)',
+          foreground: 'oklch(var(--secondary-foreground) / <alpha-value>)',
+        },
+        'muted': {
+          DEFAULT: 'oklch(var(--muted) / <alpha-value>)',
+          foreground: 'oklch(var(--muted-foreground) / <alpha-value>)',
+        },
+        'accent': {
+          DEFAULT: 'oklch(var(--accent) / <alpha-value>)',
+          foreground: 'oklch(var(--accent-foreground) / <alpha-value>)',
+        },
+        'destructive': {
+          DEFAULT: 'oklch(var(--destructive) / <alpha-value>)',
+          foreground: 'oklch(var(--destructive-foreground) / <alpha-value>)',
+        },
+        'card': {
+          DEFAULT: 'oklch(var(--card) / <alpha-value>)',
+          foreground: 'oklch(var(--card-foreground) / <alpha-value>)',
+        },
+        'popover': {
+          DEFAULT: 'oklch(var(--popover) / <alpha-value>)',
+          foreground: 'oklch(var(--popover-foreground) / <alpha-value>)',
         },
         // 功能色
         'success': 'var(--success)',
@@ -79,6 +113,8 @@ export default {
         '3xl': '0 35px 60px -12px rgba(0, 0, 0, 0.2)',
       },
       animation: {
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
         'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'shimmer': 'shimmer 1.5s infinite',
         'gradient': 'gradient 3s ease infinite',
@@ -91,6 +127,14 @@ export default {
         'slide-in-up': 'slideInUp 0.35s ease-out both',
       },
       keyframes: {
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
+        },
         slideInUp: {
           '0%': { opacity: '0', transform: 'translateY(16px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
@@ -126,5 +170,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [tailwindcssAnimate],
 }

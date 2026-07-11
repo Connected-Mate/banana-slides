@@ -1,7 +1,9 @@
 import React from 'react';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/utils';
 import type { Page } from '@/types';
 import { usePageStatus, type PageStatusContext } from '@/hooks/usePageStatus';
+import { statusClassNames } from './StatusBadge';
 
 interface ContextualStatusBadgeProps {
   page: Page;
@@ -12,8 +14,8 @@ interface ContextualStatusBadgeProps {
 }
 
 /**
- * 根据上下文智能显示状态的徽章
- * 
+ * 根据上下文智能显示状态的徽章 — adaptateur shadcn, rendu ui/badge.
+ *
  * - 在描述编辑页面：只显示描述相关状态
  * - 在图片预览页面：显示图片生成状态
  * - 其他场景：显示完整页面状态
@@ -25,26 +27,16 @@ export const ContextualStatusBadge: React.FC<ContextualStatusBadgeProps> = ({
 }) => {
   const { status, label, description } = usePageStatus(page, context);
 
-  const statusConfig: Record<string, string> = {
-    DRAFT: 'bg-gray-100 dark:bg-background-secondary text-gray-600 dark:text-foreground-tertiary',
-    GENERATING_DESCRIPTION: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 animate-pulse',
-    DESCRIPTION_GENERATED: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-    QUEUED: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 animate-pulse',
-    GENERATING: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 animate-pulse',
-    COMPLETED: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
-    FAILED: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-  };
-
   return (
-    <span
+    <Badge
+      variant="secondary"
       className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium',
-        statusConfig[status]
+        'rounded border-transparent shadow-none font-medium',
+        statusClassNames[status as keyof typeof statusClassNames]
       )}
       title={showDescription ? description : undefined}
     >
       {label}
-    </span>
+    </Badge>
   );
 };
-

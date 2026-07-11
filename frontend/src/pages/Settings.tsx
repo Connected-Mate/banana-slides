@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Home, Key, Image, Zap, Save, RotateCcw, Globe, FileText, Brain, ArrowUp, HelpCircle, Link2, ChevronDown, Volume2, Info, RefreshCw, CheckCircle } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { appVersion } from '@/utils/appVersion';
+import { Switch } from '@/components/ui/switch';
 
 // 组件内翻译
 const settingsI18n = {
@@ -1390,7 +1391,7 @@ export const Settings: React.FC = () => {
       );
     }
 
-    // switch 类型 - 开关切换
+    // switch 类型 - 开关切换 (ui/switch — Radix, role="switch")
     if (field.type === 'switch') {
       const isEnabled = Boolean(value);
       return (
@@ -1399,19 +1400,10 @@ export const Settings: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary">
               {field.label}
             </label>
-            <button
-              type="button"
-              onClick={() => handleFieldChange(field.key, !isEnabled)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-banana-500 focus:ring-offset-2 ${
-                isEnabled ? 'bg-banana-500' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-background-secondary transition-transform ${
-                  isEnabled ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
+            <Switch
+              checked={isEnabled}
+              onCheckedChange={(checked) => handleFieldChange(field.key, checked)}
+            />
           </div>
           {field.description && (
             <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{field.description}</p>

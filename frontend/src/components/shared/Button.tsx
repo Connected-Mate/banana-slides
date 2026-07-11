@@ -1,12 +1,57 @@
 import React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { Button as UiButton } from '@/components/ui/button';
 import { cn } from '@/utils';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+/**
+ * Adaptateur shadcn — API historique préservée (variant primary/secondary/ghost,
+ * size sm/md/lg, loading, icon). Rendu par ui/button, apparence banana via cva.
+ */
+
+const appButtonVariants = cva(
+  'font-semibold rounded-lg transition-all duration-200 touch-manipulation',
+  {
+    variants: {
+      variant: {
+        primary:
+          'bg-gradient-to-r from-banana-500 to-banana-600 text-black hover:shadow-yellow hover:-translate-y-0.5 active:translate-y-0 shadow-md',
+        secondary:
+          'bg-white dark:bg-background-secondary border border-banana-500 text-black dark:text-foreground-primary hover:bg-banana-50 dark:hover:bg-background-hover',
+        ghost:
+          'bg-transparent text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-secondary',
+      },
+      size: {
+        sm: 'h-8 px-3 text-sm',
+        md: 'h-10 px-6 text-base',
+        lg: 'h-12 px-8 text-lg',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  }
+);
+
+interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof appButtonVariants> {
   loading?: boolean;
   icon?: React.ReactNode;
 }
+
+/** Mapping variantes app → variantes structurelles ui/button. */
+const uiVariantMap = {
+  primary: 'default',
+  secondary: 'outline',
+  ghost: 'ghost',
+} as const;
+
+const uiSizeMap = {
+  sm: 'sm',
+  md: 'default',
+  lg: 'lg',
+} as const;
 
 export const Button: React.FC<ButtonProps> = ({
   children,
@@ -18,28 +63,11 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-banana-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation';
-
-  const variants = {
-    primary: 'bg-gradient-to-r from-banana-500 to-banana-600 text-black hover:shadow-yellow hover:-translate-y-0.5 active:translate-y-0 shadow-md',
-    secondary: 'bg-white dark:bg-background-secondary border border-banana-500 text-black dark:text-foreground-primary hover:bg-banana-50 dark:hover:bg-background-hover',
-    ghost: 'bg-transparent text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-secondary',
-  };
-  
-  const sizes = {
-    sm: 'h-8 px-3 text-sm',
-    md: 'h-10 px-6 text-base',
-    lg: 'h-12 px-8 text-lg',
-  };
-
   return (
-    <button
-      className={cn(
-        baseStyles,
-        variants[variant],
-        sizes[size],
-        className
-      )}
+    <UiButton
+      variant={uiVariantMap[variant ?? 'primary']}
+      size={uiSizeMap[size ?? 'md']}
+      className={cn(appButtonVariants({ variant, size }), className)}
       disabled={disabled || loading}
       {...props}
     >
@@ -69,7 +97,6 @@ export const Button: React.FC<ButtonProps> = ({
         <span className={children ? 'mr-2' : ''}>{icon}</span>
       )}
       {children}
-    </button>
+    </UiButton>
   );
 };
-

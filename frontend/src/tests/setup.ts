@@ -45,6 +45,22 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 // Mock scrollTo
 window.scrollTo = vi.fn()
 
+// Radix UI primitives (Dialog/Switch/Select/DropdownMenu) rely on Pointer
+// Capture + scrollIntoView, which jsdom does not implement. Stub them so the
+// shadcn-backed shared components render/interact in tests.
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = vi.fn(() => false) as never
+}
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = vi.fn() as never
+}
+if (!Element.prototype.releasePointerCapture) {
+  Element.prototype.releasePointerCapture = vi.fn() as never
+}
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = vi.fn() as never
+}
+
 // Mock fetch (可以在具体测试中覆盖)
 global.fetch = vi.fn()
 
