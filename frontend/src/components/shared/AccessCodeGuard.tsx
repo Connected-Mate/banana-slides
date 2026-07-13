@@ -3,6 +3,7 @@ import { checkAccessCode, verifyAccessCode } from '@/api/endpoints';
 import { useT } from '@/hooks/useT';
 import { Button } from './Button';
 import { Input } from './Input';
+import { Card } from './Card';
 
 const STORAGE_KEY = 'banana-access-code';
 
@@ -82,18 +83,18 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
   if (status === 'connectError') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-primary">
-        <div className="w-80 p-6 rounded-2xl bg-white dark:bg-background-secondary shadow-lg border border-gray-200 dark:border-border-primary text-center">
+        <Card className="w-80 p-6 text-center shadow-lg">
           <p className="text-gray-600 dark:text-foreground-secondary mb-1">{t('connectError')}</p>
           <p className="text-sm text-gray-400 dark:text-foreground-tertiary mb-4">{t('connectHint')}</p>
           <Button className="w-full" onClick={checkAccess}>{t('retry')}</Button>
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-primary">
-      <div className="w-80 p-6 rounded-2xl bg-white dark:bg-background-secondary shadow-lg border border-gray-200 dark:border-border-primary">
+      <Card className="w-80 p-6 shadow-lg">
         <h2 className="text-lg font-semibold text-center mb-4 text-gray-900 dark:text-foreground-primary">
           {t('title')}
         </h2>
@@ -110,7 +111,7 @@ export function AccessCodeGuard({ children }: { children: ReactNode }) {
             {t('submit')}
           </Button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }

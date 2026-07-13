@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { FileText, Loader2, CheckCircle2, XCircle, X, RefreshCw } from 'lucide-react';
 import { getReferenceFile, deleteReferenceFile, dissociateFileFromProject, triggerFileParse, type ReferenceFile } from '@/api/endpoints';
 import { useT } from '@/hooks/useT';
+import { cn } from '@/utils';
+import { Card, IconButton } from '@/components/shared';
+import { Badge } from '@/components/ui/badge';
 
 // ReferenceFileCard 组件自包含翻译
 const referenceFileCardI18n = {
@@ -117,6 +120,8 @@ export const ReferenceFileCard: React.FC<ReferenceFileCardProps> = ({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const getFileExt = (filename: string): string => filename.split('.').pop()?.toUpperCase() || '';
+
   const getStatusIcon = () => {
     switch (file.parse_status) {
       case 'pending':
@@ -161,10 +166,8 @@ export const ReferenceFileCard: React.FC<ReferenceFileCardProps> = ({
   };
 
   return (
-    <div
-      className={`flex items-center gap-2 px-3 py-2 w-72 bg-white dark:bg-background-secondary border border-gray-200 dark:border-border-primary rounded-lg hover:shadow-sm transition-shadow ${
-        onClick ? 'cursor-pointer' : ''
-      }`}
+    <Card
+      className={cn('flex items-center gap-2 px-3 py-2 w-72 hover:shadow-sm transition-shadow', onClick && 'cursor-pointer')}
       onClick={() => {
         if (!onClick) return;
         if (file.parse_status === 'pending' || file.parse_status === 'parsing') {
@@ -185,9 +188,12 @@ export const ReferenceFileCard: React.FC<ReferenceFileCardProps> = ({
           <p className="text-sm font-medium text-gray-900 dark:text-foreground-primary truncate">
             {file.filename}
           </p>
-          <span className="text-xs text-gray-500 dark:text-foreground-tertiary flex-shrink-0">
+          <Badge variant="outline" className="flex-shrink-0 font-normal">
+            {getFileExt(file.filename)}
+          </Badge>
+          <Badge variant="secondary" className="flex-shrink-0 font-normal">
             {formatFileSize(file.file_size)}
-          </span>
+          </Badge>
         </div>
         
         <div className="flex items-center gap-1.5 mt-1">
@@ -214,39 +220,30 @@ export const ReferenceFileCard: React.FC<ReferenceFileCardProps> = ({
 
       <div className="flex items-center gap-1">
         {(file.parse_status === 'completed' || file.parse_status === 'failed') && (
-          <button
+          <IconButton
+            icon={<RefreshCw className="w-4 h-4" />}
+            label={t('referenceFile.reparse')}
+            size="sm"
+            loading={isReparsing}
             onClick={(e) => {
               e.stopPropagation();
               handleReparse();
             }}
-            disabled={isReparsing}
-            className="flex-shrink-0 p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
-            title={t('referenceFile.reparse')}
-          >
-            {isReparsing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4" />
-            )}
-          </button>
+          />
         )}
-        
-        <button
+
+        <IconButton
+          icon={<X className="w-4 h-4" />}
+          label={deleteMode === 'remove' ? t('referenceFile.removeFromProject') : t('referenceFile.deleteFile')}
+          variant="danger"
+          size="sm"
+          loading={isDeleting}
           onClick={(e) => {
             e.stopPropagation();
             handleDelete();
           }}
-          disabled={isDeleting}
-          className="flex-shrink-0 p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-          title={deleteMode === 'remove' ? t('referenceFile.removeFromProject') : t('referenceFile.deleteFile')}
-        >
-          {isDeleting ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <X className="w-4 h-4" />
-          )}
-        </button>
+        />
       </div>
-    </div>
+    </Card>
   );
 };

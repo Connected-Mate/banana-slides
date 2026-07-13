@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FileText, Upload, X, Loader2, CheckCircle2, XCircle, RefreshCw, ArrowUpDown } from 'lucide-react';
 import { useT } from '@/hooks/useT';
-import { Button, useToast, Modal } from '@/components/shared';
+import { Button, IconButton, useToast, Modal } from '@/components/shared';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 // ReferenceFileSelector 组件自包含翻译
 const referenceFileSelectorI18n = {
@@ -490,9 +492,9 @@ export const ReferenceFileSelector: React.FC<ReferenceFileSelectorProps> = React
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-foreground-tertiary">
             <span>{files.length > 0 ? t('referenceFile.totalFiles', { count: files.length }) : t('referenceFile.noFiles')}</span>
             {selectedFiles.size > 0 && (
-              <span className="ml-2 text-banana-600">
+              <Badge variant="secondary" className="text-banana-700 font-normal">
                 {t('referenceFile.selectedCount', { count: selectedFiles.size })}
-              </span>
+              </Badge>
             )}
             {isLoading && files.length > 0 && (
               <RefreshCw size={14} className="animate-spin text-gray-400" />
@@ -513,23 +515,22 @@ export const ReferenceFileSelector: React.FC<ReferenceFileSelectorProps> = React
             </select>
 
             {/* 排序循环按钮 */}
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<ArrowUpDown size={14} />}
               onClick={() => {
                 const order: Array<typeof sortBy> = ['newest', 'oldest', 'name-asc', 'name-desc'];
                 const currentIndex = order.indexOf(sortBy);
                 const nextIndex = (currentIndex + 1) % order.length;
                 setSortBy(order[nextIndex]);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover rounded-md transition-colors"
             >
-              <ArrowUpDown size={14} />
-              <span>
-                {sortBy === 'newest' && t('referenceFile.sortNewest')}
-                {sortBy === 'oldest' && t('referenceFile.sortOldest')}
-                {sortBy === 'name-asc' && 'A-Z'}
-                {sortBy === 'name-desc' && 'Z-A'}
-              </span>
-            </button>
+              {sortBy === 'newest' && t('referenceFile.sortNewest')}
+              {sortBy === 'oldest' && t('referenceFile.sortOldest')}
+              {sortBy === 'name-asc' && 'A-Z'}
+              {sortBy === 'name-desc' && 'Z-A'}
+            </Button>
 
             <Button
               variant="ghost"
@@ -583,15 +584,16 @@ export const ReferenceFileSelector: React.FC<ReferenceFileSelectorProps> = React
               <p className="text-sm mt-1">{t('referenceFile.noRefFilesHint')}</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200 dark:divide-border-primary">
-              {sortedFiles.map((file) => {
+            <div>
+              {sortedFiles.map((file, index) => {
                 const isSelected = selectedFiles.has(file.id);
                 const isDeleting = deletingIds.has(file.id);
                 const isPending = file.parse_status === 'pending';
 
                 return (
+                  <React.Fragment key={file.id}>
+                  {index > 0 && <Separator />}
                   <div
-                    key={file.id}
                     onClick={() => handleSelectFile(file)}
                     className={`
                       p-4 cursor-pointer transition-colors
@@ -665,20 +667,17 @@ export const ReferenceFileSelector: React.FC<ReferenceFileSelectorProps> = React
                       </div>
 
                       {/* 删除按钮 */}
-                      <button
+                      <IconButton
+                        icon={<X className="w-4 h-4" />}
+                        label={t('referenceFile.deleteFile')}
+                        variant="danger"
+                        size="sm"
+                        loading={isDeleting}
                         onClick={(e) => handleDeleteFile(e, file)}
-                        disabled={isDeleting}
-                        className="flex-shrink-0 p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                        title={t('referenceFile.deleteFile')}
-                      >
-                        {isDeleting ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <X className="w-4 h-4" />
-                        )}
-                      </button>
+                      />
                     </div>
                   </div>
+                  </React.Fragment>
                 );
               })}
             </div>

@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ImagePlus, Loader2, Save, X } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { Textarea } from './Textarea';
+import { Button } from './Button';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/utils';
 import { PRESET_STYLES } from '@/config/presetStyles';
 import { presetStylesI18n } from '@/config/presetStylesI18n';
 import {
@@ -170,21 +173,23 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
               />
             ))}
           </div>
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="sm"
             onClick={handleSave}
             disabled={isSaving || !saveName.trim()}
-            className="px-3 py-1 text-xs font-medium text-white bg-banana-500 hover:bg-banana-600 rounded-md disabled:opacity-50 transition-colors"
+            className="text-xs px-3 py-1 h-auto"
           >
             {isSaving ? <Loader2 size={12} className="animate-spin" /> : t('saveStyle')}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => { setShowSaveDialog(false); setSaveName(''); }}
-            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-foreground-secondary"
+            className="p-1 h-auto text-gray-400 hover:text-gray-600 dark:hover:text-foreground-secondary"
           >
             <X size={14} />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -201,7 +206,10 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
                   onClick={() => onChange(style.description)}
                   onMouseEnter={() => setHoveredUserStyleId(style.id)}
                   onMouseLeave={() => setHoveredUserStyleId(null)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border-2 border-banana-200 dark:border-banana/30 text-banana-700 dark:text-banana bg-banana-50 dark:bg-banana/10 hover:border-banana-400 dark:hover:border-banana hover:bg-banana-100 dark:hover:bg-banana/20 transition-all duration-200"
+                  className={cn(
+                    buttonVariants({ variant: 'outline', size: 'sm' }),
+                    'h-auto rounded-full gap-1.5 px-3 py-1.5 text-xs font-medium border-2 border-banana-200 dark:border-banana/30 text-banana-700 dark:text-banana bg-banana-50 dark:bg-banana/10 hover:border-banana-400 dark:hover:border-banana hover:bg-banana-100 dark:hover:bg-banana/20'
+                  )}
                 >
                   <span
                     className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-black/10"
@@ -246,7 +254,10 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
                 onClick={() => onChange(t(preset.descriptionKey))}
                 onMouseEnter={() => setHoveredPresetId(preset.id)}
                 onMouseLeave={() => setHoveredPresetId(null)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border-2 border-gray-200 dark:border-border-primary dark:text-foreground-secondary hover:border-banana-400 dark:hover:border-banana hover:bg-banana-50 dark:hover:bg-background-hover transition-all duration-200 hover:shadow-sm dark:hover:shadow-none"
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'sm' }),
+                  'h-auto rounded-full gap-1.5 px-3 py-1.5 text-xs font-medium border-2 border-gray-200 dark:border-border-primary dark:text-foreground-secondary hover:border-banana-400 dark:hover:border-banana hover:bg-banana-50 dark:hover:bg-background-hover hover:shadow-sm dark:hover:shadow-none'
+                )}
               >
                 <span
                   className="w-2.5 h-2.5 rounded-full flex-shrink-0 ring-1 ring-black/10"
@@ -279,7 +290,10 @@ export const TextStyleSelector: React.FC<TextStyleSelectorProps> = ({ value, onC
             type="button"
             onClick={() => styleImageInputRef.current?.click()}
             disabled={isExtractingStyle}
-            className="px-3 py-1.5 text-xs font-medium rounded-full border-2 border-dashed border-gray-300 dark:border-border-primary dark:text-foreground-secondary hover:border-banana-400 dark:hover:border-banana hover:bg-banana-50 dark:hover:bg-background-hover transition-all duration-200 hover:shadow-sm dark:hover:shadow-none flex items-center gap-1"
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'h-auto rounded-full gap-1 px-3 py-1.5 text-xs font-medium border-2 border-dashed border-gray-300 dark:border-border-primary dark:text-foreground-secondary hover:border-banana-400 dark:hover:border-banana hover:bg-banana-50 dark:hover:bg-background-hover hover:shadow-sm dark:hover:shadow-none'
+            )}
           >
             {isExtractingStyle ? (
               <><Loader2 size={12} className="animate-spin" />{t('extracting')}</>

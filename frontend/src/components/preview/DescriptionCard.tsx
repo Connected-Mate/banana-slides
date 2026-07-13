@@ -4,6 +4,9 @@ import { useT } from '@/hooks/useT';
 import { useImagePaste, buildMaterialsMarkdown } from '@/hooks/useImagePaste';
 import { Card, ContextualStatusBadge, Button, Modal, Skeleton, Markdown, MaterialSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
+import { Badge } from '@/components/ui/badge';
+import { CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { useDescriptionGeneratingState } from '@/hooks/useGeneratingState';
 import type { Page, DescriptionContent, Material } from '@/types';
 
@@ -163,30 +166,34 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
     <>
       <Card className="p-0 overflow-hidden flex flex-col">
         {/* 标题栏 */}
-        <div className="bg-banana-50 dark:bg-background-hover px-4 py-3 border-b border-gray-100 dark:border-border-primary">
+        <CardHeader className="bg-banana-50 dark:bg-background-hover px-4 py-3 border-b border-gray-100 dark:border-border-primary space-y-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-gray-900 dark:text-foreground-primary">{t('descriptionCard.page', { num: index + 1 })}</span>
               {index === 0 && (
-                <span
-                  className="text-xs px-1.5 py-0.5 bg-banana-100 dark:bg-banana-900/30 text-banana-700 dark:text-banana-400 rounded"
+                <Badge
+                  variant="secondary"
+                  className="rounded border-transparent shadow-none font-medium px-1.5 py-0.5 text-xs bg-banana-100 dark:bg-banana-900/30 text-banana-700 dark:text-banana-400"
                   title={t('descriptionCard.coverPageTooltip')}
                 >
                   {t('descriptionCard.coverPage')}
-                </span>
+                </Badge>
               )}
               {page.part && (
-                <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded">
+                <Badge
+                  variant="secondary"
+                  className="rounded border-transparent shadow-none font-medium px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                >
                   {page.part}
-                </span>
+                </Badge>
               )}
             </div>
             <ContextualStatusBadge page={page} context="description" />
           </div>
-        </div>
+        </CardHeader>
 
         {/* 内容 */}
-        <div className="p-4 flex-1 max-h-96 overflow-y-auto desc-card-scroll" data-testid="description-card-content">
+        <CardContent className="p-4 flex-1 max-h-96 overflow-y-auto desc-card-scroll" data-testid="description-card-content">
           {generating ? (
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />
@@ -211,12 +218,16 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
                       <FieldIcon size={12} />
                       <span className="font-medium">{name}</span>
                       {notInImagePrompt && (
-                        <span className="relative group/nip">
-                          <ImageOff size={11} className="opacity-50" />
-                          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-max max-w-40 px-2 py-1 text-[10px] leading-snug text-gray-600 dark:text-foreground-secondary bg-white dark:bg-background-primary border border-gray-200 dark:border-border-primary rounded-md shadow-md opacity-0 pointer-events-none group-hover/nip:opacity-100 transition-opacity z-50">
-                            {t('descriptionCard.notInImagePrompt')}
-                          </span>
-                        </span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span><ImageOff size={11} className="opacity-50" /></span>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-40 text-[10px] leading-snug">
+                              {t('descriptionCard.notInImagePrompt')}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-foreground-tertiary"><Markdown>{value}</Markdown></div>
@@ -230,10 +241,10 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
               <p className="text-sm">{t('descriptionCard.noDescription')}</p>
             </div>
           )}
-        </div>
+        </CardContent>
 
         {/* 操作栏 */}
-        <div className="border-t border-gray-100 dark:border-border-primary px-4 py-3 flex justify-end gap-2 mt-auto">
+        <CardFooter className="border-t border-gray-100 dark:border-border-primary px-4 py-3 flex justify-end gap-2 mt-auto">
           <Button
             variant="ghost"
             size="sm"
@@ -252,7 +263,7 @@ export const DescriptionCard: React.FC<DescriptionCardProps> = React.memo(({
           >
             {generating ? t('common.generating') : t('descriptionCard.regenerate')}
           </Button>
-        </div>
+        </CardFooter>
       </Card>
 
       {/* 编辑对话框 */}

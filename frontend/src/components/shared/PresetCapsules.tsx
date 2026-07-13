@@ -2,7 +2,11 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useT } from '@/hooks/useT';
+import { cn } from '@/utils';
 import { Modal } from '@/components/shared/Modal';
+import { Button } from '@/components/shared/Button';
+import { Textarea } from '@/components/shared/Textarea';
+import { badgeVariants } from '@/components/ui/badge';
 
 // ─── i18n ────────────────────────────────────────────────────────────────────
 const presetI18n = {
@@ -116,9 +120,9 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
     saveUserPresets(type, updated);
   }, [userPresets, type]);
 
-  const capsuleBase = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs cursor-pointer transition-colors max-w-[200px] truncate';
-  const systemCapsule = `${capsuleBase} bg-gray-100 dark:bg-background-primary text-gray-600 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-banana-900/20 hover:text-banana-700 dark:hover:text-banana-400 border border-gray-200 dark:border-border-primary`;
-  const userCapsule = `${capsuleBase} bg-banana-50 dark:bg-banana-900/20 text-banana-700 dark:text-banana-400 hover:bg-banana-100 dark:hover:bg-banana-900/30 border border-banana-200 dark:border-banana-700/40`;
+  const capsuleBase = cn(badgeVariants({ variant: 'outline' }), 'gap-1 rounded-full py-1 cursor-pointer max-w-[200px] truncate');
+  const systemCapsule = cn(capsuleBase, 'border-gray-200 bg-gray-100 text-gray-600 hover:bg-banana-50 hover:text-banana-700 dark:border-border-primary dark:bg-background-primary dark:text-foreground-secondary dark:hover:bg-banana-900/20 dark:hover:text-banana-400');
+  const userCapsule = cn(capsuleBase, 'border-banana-200 bg-banana-50 text-banana-700 hover:bg-banana-100 dark:border-banana-700/40 dark:bg-banana-900/20 dark:text-banana-400 dark:hover:bg-banana-900/30');
 
   return (
     <>
@@ -165,15 +169,16 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
         ))}
 
         {/* Add button */}
-        <button
+        <Button
           type="button"
+          variant="ghost"
           data-testid={`${type}-add-preset`}
           onClick={() => setIsModalOpen(true)}
-          className={`${capsuleBase} bg-white dark:bg-background-primary text-gray-400 dark:text-foreground-tertiary hover:text-banana-600 dark:hover:text-banana-400 hover:border-banana-300 dark:hover:border-banana-600/40 border border-dashed border-gray-300 dark:border-border-primary`}
+          className={cn(capsuleBase, 'h-auto border-dashed border-gray-300 bg-white text-gray-400 hover:border-banana-300 hover:bg-white hover:text-banana-600 dark:border-border-primary dark:bg-background-primary dark:text-foreground-tertiary dark:hover:border-banana-600/40 dark:hover:bg-background-primary dark:hover:text-banana-400')}
         >
           <Plus size={10} />
           {t('preset.addCustom')}
-        </button>
+        </Button>
       </div>
 
       {/* Add preset modal */}
@@ -201,33 +206,34 @@ export default function PresetCapsules({ type, onAppend }: PresetCapsulesProps) 
             <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-1.5">
               {t('preset.contentLabel')}
             </label>
-            <textarea
+            <Textarea
               data-testid={`${type}-preset-content-input`}
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
               placeholder={t('preset.contentPlaceholder')}
               rows={3}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-border-primary bg-gray-50 dark:bg-background-primary text-gray-700 dark:text-foreground-secondary placeholder-gray-400 dark:placeholder-foreground-tertiary/50 resize-y focus:outline-none focus:border-banana-300 dark:focus:border-banana-500/40 transition-colors"
+              className="min-h-0 rounded-lg bg-gray-50 px-3 py-2 focus-visible:ring-banana-400 dark:bg-background-primary"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               data-testid={`${type}-preset-cancel`}
               onClick={handleCloseModal}
-              className="px-4 py-2 text-sm rounded-lg text-gray-600 dark:text-foreground-tertiary hover:bg-gray-100 dark:hover:bg-background-hover transition-colors"
             >
               {t('preset.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              size="sm"
               data-testid={`${type}-preset-confirm`}
               onClick={handleAddPreset}
               disabled={!newName.trim() || !newContent.trim()}
-              className="px-4 py-2 text-sm rounded-lg bg-banana-500 text-white hover:bg-banana-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {t('preset.add')}
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>

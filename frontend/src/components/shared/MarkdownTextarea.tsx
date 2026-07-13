@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useCallback, useState, useMemo, forwardRef, u
 import { cn } from '@/utils';
 import { useT } from '@/hooks/useT';
 import { isUploadingUrl, getUploadingPreviewUrl } from '@/hooks/useImagePaste';
+import { IconButton, Button, Card } from '@/components/shared';
+import { Label } from '@/components/ui/label';
 
 const markdownTextareaI18n = {
   zh: {
@@ -621,9 +623,9 @@ export const MarkdownTextarea = forwardRef<MarkdownTextareaRef, MarkdownTextarea
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
+        <Label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
           {label}
-        </label>
+        </Label>
       )}
       {/* Outer container — owns the border, focus ring, and toolbar */}
       <div className={cn(
@@ -697,8 +699,14 @@ export const MarkdownTextarea = forwardRef<MarkdownTextareaRef, MarkdownTextarea
             <div className="flex items-center gap-0.5">
               {shouldShowUpload && (
                 <div className="relative">
-                  <button
-                    type="button"
+                  <IconButton
+                    icon={
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
+                      </svg>
+                    }
+                    label={t('markdownTextarea.uploadImage')}
+                    size="md"
                     onClick={() => {
                       if (onSelectFromLibrary) {
                         setShowUploadMenu(prev => !prev);
@@ -706,44 +714,44 @@ export const MarkdownTextarea = forwardRef<MarkdownTextareaRef, MarkdownTextarea
                         fileInputRef.current?.click();
                       }
                     }}
-                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-foreground-tertiary dark:hover:text-foreground-secondary dark:hover:bg-background-hover rounded transition-colors cursor-pointer"
-                    title={t('markdownTextarea.uploadImage')}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
-                    </svg>
-                  </button>
+                  />
                   {showUploadMenu && (
                     <>
                       <div className="fixed inset-0 z-30" onClick={() => setShowUploadMenu(false)} />
-                      <div className="absolute bottom-full left-0 mb-1 py-1 bg-white dark:bg-background-secondary border border-gray-200 dark:border-border-primary rounded-lg shadow-lg z-40 min-w-[160px]">
-                      <button
-                        type="button"
-                        className="w-full px-3 py-1.5 text-left text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover flex items-center gap-2"
-                        onClick={() => {
-                          setShowUploadMenu(false);
-                          fileInputRef.current?.click();
-                        }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                        {t('markdownTextarea.localUpload')}
-                      </button>
-                      <button
-                        type="button"
-                        className="w-full px-3 py-1.5 text-left text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover flex items-center gap-2"
-                        onClick={() => {
-                          setShowUploadMenu(false);
-                          onSelectFromLibrary?.();
-                        }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
-                        </svg>
-                        {t('markdownTextarea.selectFromLibrary')}
-                      </button>
-                    </div>
+                      <Card className="absolute bottom-full left-0 mb-1 py-1 z-40 min-w-[160px]">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                          }
+                          className="w-full justify-start rounded-none"
+                          onClick={() => {
+                            setShowUploadMenu(false);
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          {t('markdownTextarea.localUpload')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
+                            </svg>
+                          }
+                          className="w-full justify-start rounded-none"
+                          onClick={() => {
+                            setShowUploadMenu(false);
+                            onSelectFromLibrary?.();
+                          }}
+                        >
+                          {t('markdownTextarea.selectFromLibrary')}
+                        </Button>
+                      </Card>
                     </>
                   )}
                 </div>

@@ -130,6 +130,12 @@ const detailI18n = {
   }
 };
 import { Button, Loading, useToast, useConfirm, AiRefineInput, FilePreviewModal, ReferenceFileList, MaterialSelector, ImportMarkdownModal } from '@/components/shared';
+import { Button as UiButton } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { DescriptionCard } from '@/components/preview/DescriptionCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { refineDescriptions, getTaskStatus, addPages, updateProject, getSettings, updateSettings } from '@/api/endpoints';
@@ -772,10 +778,14 @@ export const DetailEditor: React.FC = () => {
                   <div>
                     <label className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1.5">
                       {t('detail.generationMode')}
-                      <span className="relative group">
-                        <HelpCircle size={12} className="text-gray-400 cursor-help" />
-                        <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-52 px-2.5 py-1.5 text-[11px] leading-relaxed text-gray-600 dark:text-foreground-secondary bg-white dark:bg-background-primary border border-gray-200 dark:border-border-primary rounded-md shadow-md opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">{t('detail.generationModeHint')}</span>
-                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span><HelpCircle size={12} className="text-gray-400 cursor-help" /></span>
+                          </TooltipTrigger>
+                          <TooltipContent className="w-52 text-[11px] leading-relaxed">{t('detail.generationModeHint')}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </label>
                     <div className="flex gap-1">
                       {(['streaming', 'parallel'] as const).map(mode => (
@@ -804,10 +814,14 @@ export const DetailEditor: React.FC = () => {
                   <div>
                     <label className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1.5">
                       {t('detail.extraFields')}
-                      <span className="relative group">
-                        <HelpCircle size={12} className="text-gray-400 cursor-help" />
-                        <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-52 px-2.5 py-1.5 text-[11px] leading-relaxed text-gray-600 dark:text-foreground-secondary bg-white dark:bg-background-primary border border-gray-200 dark:border-border-primary rounded-md shadow-md opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">{t('detail.extraFieldsHint')}</span>
-                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span><HelpCircle size={12} className="text-gray-400 cursor-help" /></span>
+                          </TooltipTrigger>
+                          <TooltipContent className="w-52 text-[11px] leading-relaxed">{t('detail.extraFieldsHint')}</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </label>
                     <DndContext sensors={fieldSensors} collisionDetection={closestCenter} onDragEnd={handleFieldDragEnd}>
                       <SortableContext items={availableFields} strategy={rectSortingStrategy}>
@@ -848,9 +862,9 @@ export const DetailEditor: React.FC = () => {
                       </SortableContext>
                     </DndContext>
                     <div className="flex gap-1">
-                      <input
+                      <Input
                         type="text"
-                        className="flex-1 min-w-0 px-2 py-1 text-xs rounded-md border border-gray-200 dark:border-border-primary bg-white dark:bg-background-primary text-gray-700 dark:text-foreground-secondary focus:outline-none focus:ring-1 focus:ring-banana-500/30"
+                        className="flex-1 min-w-0 h-auto px-2 py-1 text-xs rounded-md border-gray-200 dark:border-border-primary bg-white dark:bg-background-primary text-gray-700 dark:text-foreground-secondary focus-visible:ring-1 focus-visible:ring-banana-500/30 focus-visible:ring-offset-0"
                         placeholder={t('detail.addField')}
                         value={newFieldName}
                         onChange={e => setNewFieldName(e.target.value)}
@@ -871,9 +885,11 @@ export const DetailEditor: React.FC = () => {
                           }
                         }}
                       />
-                      <button
+                      <UiButton
                         type="button"
-                        className="p-1 rounded-md text-gray-400 hover:text-banana-500 hover:bg-gray-100 dark:hover:bg-background-hover transition-colors disabled:opacity-40"
+                        variant="ghost"
+                        size="icon"
+                        className="h-auto w-auto p-1 rounded-md text-gray-400 hover:text-banana-500 hover:bg-gray-100 dark:hover:bg-background-hover disabled:opacity-40"
                         disabled={!newFieldName.trim() || availableFields.includes(newFieldName.trim()) || availableFields.length >= 10}
                         onClick={() => {
                           const trimmed = newFieldName.trim();
@@ -889,7 +905,7 @@ export const DetailEditor: React.FC = () => {
                         }}
                       >
                         <Plus size={14} />
-                      </button>
+                      </UiButton>
                     </div>
                   </div>
 
@@ -926,48 +942,44 @@ export const DetailEditor: React.FC = () => {
 
             <div className="w-px h-6 bg-gray-200 dark:bg-border-primary flex-shrink-0" />
             {/* 导入导出下拉菜单 */}
-            <div className="relative" ref={fileMenuRef}>
-              <Button
-                variant="secondary"
-                onClick={() => setFileMenuOpen(!fileMenuOpen)}
-                icon={<FileText size={16} className="md:w-[18px] md:h-[18px]" />}
-                className="text-sm md:text-base"
-              >
-                {t('detail.importExport')}
-                <ChevronDown size={14} className={`ml-1 transition-transform duration-200 ${fileMenuOpen ? 'rotate-180' : ''}`} />
-              </Button>
-              {fileMenuOpen && (
-                <div className="absolute top-full right-0 mt-1 z-50 min-w-[160px] rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary shadow-lg dark:shadow-none overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => { handleExportDescriptions(); setFileMenuOpen(false); }}
-                    disabled={!currentProject.pages.some(p => p.description_content)}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:bg-gray-50 dark:hover:bg-background-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
-                  >
-                    <Download size={14} />
-                    {t('detail.export')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { handleExportFull(); setFileMenuOpen(false); }}
-                    disabled={!currentProject.pages.some(p => p.description_content)}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:bg-gray-50 dark:hover:bg-background-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
-                  >
-                    <Download size={14} />
-                    {t('detail.exportFull')}
-                  </button>
-                  <div className="border-t border-gray-100 dark:border-border-primary" />
-                  <button
-                    type="button"
-                    onClick={() => { setIsImportModalOpen(true); setFileMenuOpen(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:bg-gray-50 dark:hover:bg-background-hover transition-colors duration-150"
-                  >
-                    <Upload size={14} />
-                    {t('detail.import')}
-                  </button>
-                </div>
-              )}
-            </div>
+            <DropdownMenu open={fileMenuOpen} onOpenChange={setFileMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="secondary"
+                  icon={<FileText size={16} className="md:w-[18px] md:h-[18px]" />}
+                  className="text-sm md:text-base"
+                >
+                  {t('detail.importExport')}
+                  <ChevronDown size={14} className={`ml-1 transition-transform duration-200 ${fileMenuOpen ? 'rotate-180' : ''}`} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[160px]">
+                <DropdownMenuItem
+                  onClick={() => { handleExportDescriptions(); setFileMenuOpen(false); }}
+                  disabled={!currentProject.pages.some(p => p.description_content)}
+                  className="gap-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary"
+                >
+                  <Download size={14} />
+                  {t('detail.export')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => { handleExportFull(); setFileMenuOpen(false); }}
+                  disabled={!currentProject.pages.some(p => p.description_content)}
+                  className="gap-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary"
+                >
+                  <Download size={14} />
+                  {t('detail.exportFull')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => { setIsImportModalOpen(true); setFileMenuOpen(false); }}
+                  className="gap-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary"
+                >
+                  <Upload size={14} />
+                  {t('detail.import')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <span className="text-xs md:text-sm text-gray-500 dark:text-foreground-tertiary whitespace-nowrap">
               {currentProject.pages.filter((p) => p.description_content).length} /{' '}
               {currentProject.pages.length} {t('detail.pagesCompleted')}

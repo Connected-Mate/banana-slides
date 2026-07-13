@@ -3,6 +3,7 @@ import { Sparkles, FileText, Palette, MessageSquare, Download, ChevronLeft, Chev
 import { useNavigate } from 'react-router-dom';
 import { Modal } from './Modal';
 import { Button } from './Button';
+import { Separator } from '@/components/ui/separator';
 import { useT } from '@/hooks/useT';
 import { useTranslation } from 'react-i18next';
 import logoUrl from '@/assets/logo.png';
@@ -385,7 +386,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     <Modal isOpen={isOpen} onClose={onClose} title="" size="lg">
       <div className="space-y-6">
         {/* header */}
-        <div className="text-center pb-4 border-b border-gray-100 dark:border-border-primary">
+        <div className="text-center pb-4">
           <div className="inline-flex items-center gap-1.5 mb-2 text-meta font-medium text-gray-500 dark:text-foreground-tertiary">
             <Palette size={13} />
             <span>{t('guide.brand')}</span>
@@ -393,6 +394,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
           <h2 className="font-display text-2xl font-bold text-gray-800 dark:text-foreground-primary">{t(page.titleKey)}</h2>
           <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1">{t(page.subtitleKey)}</p>
         </div>
+        <Separator />
 
         {/* dots */}
         <div className="flex justify-center gap-2">
@@ -412,7 +414,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* footer */}
-        <div className="pt-4 border-t flex justify-between items-center">
+        <Separator />
+        <div className="pt-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             {pageIdx > 0 && (
               <Button variant="ghost" onClick={() => setPageIdx(pageIdx - 1)} icon={<ChevronLeft size={16} />} size="sm">

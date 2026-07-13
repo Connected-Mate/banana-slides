@@ -5,6 +5,9 @@ import { Home, Key, Image, Zap, Save, RotateCcw, Globe, FileText, Brain, ArrowUp
 import { useT } from '@/hooks/useT';
 import { appVersion } from '@/utils/appVersion';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
 
 // 组件内翻译
 const settingsI18n = {
@@ -469,6 +472,9 @@ const VOLCENGINE_RECOMMENDED_MODELS = {
 
 // LazyLLM 厂商名集合
 const LAZYLLM_VENDOR_SET = new Set(LAZYLLM_SOURCES.map(s => s.value));
+
+// Radix Select 不允许 item value 为空字符串，用哨兵值代表"使用默认配置"
+const MODEL_PROVIDER_DEFAULT = '__use_default__';
 
 // 初始表单数据
 const initialFormData = {
@@ -1368,22 +1374,18 @@ export const Settings: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
             {field.label}
           </label>
-          <select
-            value={value as string}
-            onChange={(e) => handleFieldChange(field.key, e.target.value)}
-            className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent"
-          >
-            {!(value as string) && (
-              <option value="" disabled>
-                {field.placeholder || t('settings.fields.selectPlaceholder')}
-              </option>
-            )}
-            {field.options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <Select value={value as string} onValueChange={(v) => handleFieldChange(field.key, v)}>
+            <SelectTrigger className="w-full h-10 px-4 rounded-lg border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary">
+              <SelectValue placeholder={field.placeholder || t('settings.fields.selectPlaceholder')} />
+            </SelectTrigger>
+            <SelectContent>
+              {field.options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {field.description && (
             <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{field.description}</p>
           )}
@@ -1519,22 +1521,26 @@ export const Settings: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
             {item.sourceLabel}
           </label>
-          <select
-            value={sourceValue}
-            onChange={(e) => handleFieldChange(item.sourceKey, e.target.value)}
-            className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent"
+          <Select
+            value={sourceValue || MODEL_PROVIDER_DEFAULT}
+            onValueChange={(v) => handleFieldChange(item.sourceKey, v === MODEL_PROVIDER_DEFAULT ? '' : v)}
           >
-            <option value="">{t('settings.fields.modelProviderPlaceholder')}</option>
-            {allProviderSources.map((option) => (
-              <option
-                key={option.value}
-                value={option.value}
-                disabled={option.value === 'codex' && !settings?.openai_oauth_connected}
-              >
-                {option.label}{option.value === 'codex' && !settings?.openai_oauth_connected ? ` (${t('settings.openaiOAuth.disconnected')})` : ''}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full h-10 px-4 rounded-lg border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={MODEL_PROVIDER_DEFAULT}>{t('settings.fields.modelProviderPlaceholder')}</SelectItem>
+              {allProviderSources.map((option) => (
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.value === 'codex' && !settings?.openai_oauth_connected}
+                >
+                  {option.label}{option.value === 'codex' && !settings?.openai_oauth_connected ? ` (${t('settings.openaiOAuth.disconnected')})` : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">
             {t('settings.fields.modelProviderDesc')}
           </p>
@@ -1581,15 +1587,19 @@ export const Settings: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
               {t('settings.fields.imageApiProtocol')}
             </label>
-            <select
+            <Select
               value={formData.openai_image_api_protocol}
-              onChange={(e) => handleFieldChange('openai_image_api_protocol', e.target.value)}
-              className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent"
+              onValueChange={(v) => handleFieldChange('openai_image_api_protocol', v)}
             >
-              <option value="auto">{t('settings.fields.imageApiProtocolAuto')}</option>
-              <option value="images">{t('settings.fields.imageApiProtocolImages')}</option>
-              <option value="chat">{t('settings.fields.imageApiProtocolChat')}</option>
-            </select>
+              <SelectTrigger className="w-full h-10 px-4 rounded-lg border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">{t('settings.fields.imageApiProtocolAuto')}</SelectItem>
+                <SelectItem value="images">{t('settings.fields.imageApiProtocolImages')}</SelectItem>
+                <SelectItem value="chat">{t('settings.fields.imageApiProtocolChat')}</SelectItem>
+              </SelectContent>
+            </Select>
             <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">
               {t('settings.fields.imageApiProtocolDesc')}
             </p>
@@ -1641,7 +1651,7 @@ export const Settings: React.FC = () => {
       {ConfirmDialog}
       <div className="space-y-8">
         {/* ChatGPT 账号 — hero, chemin recommandé */}
-        <div className="rounded-2xl border border-gray-200/70 dark:border dark:border-border-primary bg-white dark:bg-background-secondary shadow-sm dark:shadow-none p-5 md:p-6">
+        <Card className="rounded-2xl border-gray-200/70 dark:border-border-primary shadow-sm dark:shadow-none p-5 md:p-6">
           <div className="flex items-center gap-2 mb-1">
             <Link2 size={18} className="text-banana-600 dark:text-banana flex-shrink-0" />
             <h2 className="font-display text-subhead font-semibold text-gray-900 dark:text-foreground-primary">
@@ -1655,32 +1665,43 @@ export const Settings: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${settings?.openai_oauth_connected ? 'bg-green-500' : 'bg-gray-300 dark:bg-background-hover'}`} />
-              <div>
-                <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className={`rounded-full border-transparent shadow-none font-medium ${
+                    settings?.openai_oauth_connected
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                      : 'bg-gray-100 dark:bg-background-secondary text-gray-600 dark:text-foreground-tertiary'
+                  }`}
+                >
                   {settings?.openai_oauth_connected ? t('settings.openaiOAuth.connected') : t('settings.openaiOAuth.disconnected')}
-                </span>
+                </Badge>
                 {settings?.openai_oauth_connected && settings?.openai_oauth_account_id && (
-                  <span className="ml-2 text-sm text-gray-500 dark:text-foreground-tertiary">
+                  <span className="text-sm text-gray-500 dark:text-foreground-tertiary">
                     ({settings.openai_oauth_account_id})
                   </span>
                 )}
               </div>
             </div>
             {settings?.openai_oauth_connected ? (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleOAuthDisconnect}
-                className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-foreground-tertiary hover:text-red-600 dark:hover:text-red-400 transition-colors self-start sm:self-auto"
+                className="text-sm font-medium text-gray-500 dark:text-foreground-tertiary hover:text-red-600 dark:hover:text-red-400 hover:bg-transparent dark:hover:bg-transparent self-start sm:self-auto"
               >
                 {t('settings.openaiOAuth.disconnectBtn')}
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
+                variant="primary"
                 onClick={handleOAuthLogin}
                 disabled={oauthConnecting}
-                className="px-5 py-2.5 text-sm font-semibold text-black bg-banana-500 hover:bg-banana-600 rounded-lg transition-colors disabled:opacity-50 shadow-sm self-start sm:self-auto"
+                loading={oauthConnecting}
+                className="self-start sm:self-auto"
               >
                 {oauthConnecting ? t('settings.openaiOAuth.connecting') : t('settings.openaiOAuth.loginBtn')}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -1690,53 +1711,60 @@ export const Settings: React.FC = () => {
 
           {!settings?.openai_oauth_connected && (
             <div className="mt-3">
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setManualCallbackOpen(v => !v)}
-                className="text-xs text-gray-400 dark:text-foreground-tertiary hover:text-gray-600 dark:hover:text-foreground-secondary hover:underline transition-colors"
+                className="h-auto px-0 py-0 text-xs font-normal text-gray-400 dark:text-foreground-tertiary hover:text-gray-600 dark:hover:text-foreground-secondary hover:bg-transparent dark:hover:bg-transparent hover:underline"
               >
                 {t('settings.openaiOAuth.manualCallbackLabel')}
-              </button>
+              </Button>
               {manualCallbackOpen && (
                 <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                   <p className="text-xs text-amber-700 dark:text-amber-300 mb-2">{t('settings.openaiOAuth.manualCallbackHint')}</p>
                   <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={manualCallbackUrl}
-                      onChange={(e) => setManualCallbackUrl(e.target.value)}
-                      placeholder={t('settings.openaiOAuth.manualCallbackPlaceholder')}
-                      className="flex-1 px-3 py-1.5 text-xs border border-gray-300 dark:border-border-primary rounded-md bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary placeholder-gray-400"
-                    />
-                    <button
+                    <div className="flex-1">
+                      <Input
+                        type="text"
+                        value={manualCallbackUrl}
+                        onChange={(e) => setManualCallbackUrl(e.target.value)}
+                        placeholder={t('settings.openaiOAuth.manualCallbackPlaceholder')}
+                        className="h-auto px-3 py-1.5 text-xs"
+                      />
+                    </div>
+                    <Button
+                      variant="primary"
+                      size="sm"
                       onClick={handleManualCallback}
                       disabled={manualCallbackSubmitting || !manualCallbackUrl.trim()}
-                      className="px-3 py-1.5 text-xs font-medium text-white bg-gray-900 dark:bg-foreground-primary dark:text-background-primary rounded-md hover:bg-gray-800 dark:hover:opacity-90 transition-colors disabled:opacity-50"
+                      loading={manualCallbackSubmitting}
                     >
                       {t('settings.openaiOAuth.manualCallbackSubmit')}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
             </div>
           )}
-        </div>
+        </Card>
 
         {/* 高级：使用你自己的 API Key（折叠区域，默认关闭） */}
-        <div className="border-t border-gray-200 dark:border-border-primary pt-2">
-          <button
-            type="button"
-            onClick={() => setAdvancedOpen(!advancedOpen)}
-            className="w-full flex items-center justify-between px-0 py-3 text-left hover:opacity-80 transition-opacity"
-          >
-            <span className="text-sm font-medium text-gray-500 dark:text-foreground-tertiary">
-              {t('settings.sections.advancedSettings')}
-            </span>
-            <ChevronDown
-              size={16}
-              className={`text-gray-400 dark:text-foreground-tertiary transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`}
-            />
-          </button>
-          {advancedOpen && (
+        <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen} className="border-t border-gray-200 dark:border-border-primary pt-2">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="w-full flex items-center justify-between px-0 py-3 text-left hover:opacity-80 transition-opacity"
+            >
+              <span className="text-sm font-medium text-gray-500 dark:text-foreground-tertiary">
+                {t('settings.sections.advancedSettings')}
+              </span>
+              <ChevronDown
+                size={16}
+                className={`text-gray-400 dark:text-foreground-tertiary transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
             <div className="pb-4 space-y-8 animate-slide-in-up">
         {/* 默认 API 配置区块 */}
         <div data-testid="global-api-config-section">
@@ -1751,21 +1779,25 @@ export const Settings: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">
                 {t('settings.fields.aiProviderFormat')}
               </label>
-              <select
+              <Select
                 value={formData.ai_provider_format}
-                onChange={(e) => handleFieldChange('ai_provider_format', e.target.value)}
-                className="w-full h-10 px-4 rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent"
+                onValueChange={(v) => handleFieldChange('ai_provider_format', v)}
               >
-                {allProviderSources.map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                    disabled={option.value === 'codex' && !settings?.openai_oauth_connected}
-                  >
-                    {option.label}{option.value === 'codex' && !settings?.openai_oauth_connected ? ` (${t('settings.openaiOAuth.disconnected')})` : ''}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full h-10 px-4 rounded-lg border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {allProviderSources.map((option) => (
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      disabled={option.value === 'codex' && !settings?.openai_oauth_connected}
+                    >
+                      {option.label}{option.value === 'codex' && !settings?.openai_oauth_connected ? ` (${t('settings.openaiOAuth.disconnected')})` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="mt-1 text-sm text-gray-500 dark:text-foreground-tertiary">{t('settings.fields.aiProviderFormatDesc')}</p>
             </div>
 
@@ -1844,12 +1876,14 @@ export const Settings: React.FC = () => {
                           >
                             {t(`${activeVolcenginePromoKey}.guideLink`)}
                           </a>
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => copyToClipboard(volcengineAgentPlansUrl)}
-                            className="text-xs px-2 py-0.5 rounded transition-colors bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300"
+                            className="h-auto px-2 py-0.5 text-xs font-medium rounded bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300"
                           >
                             {t(`${activeVolcenginePromoKey}.copy`)}
-                          </button>
+                          </Button>
                         </span>
                       </li>
                       <li>{t(`${activeApiKeyHelpKey}.step2`)}</li>
@@ -1898,12 +1932,14 @@ export const Settings: React.FC = () => {
                     >
                       {t('settings.apiKeyHelp.linkLabel')}
                     </a>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => copyToClipboard(AIHUBMIX_AFFILIATE_URL)}
-                      className="text-xs px-2 py-0.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded transition-colors"
+                      className="h-auto px-2 py-0.5 text-xs font-medium rounded bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300"
                     >
                       {t('settings.apiKeyHelp.copyLink')}
-                    </button>
+                    </Button>
                   </span>
                   {t('settings.apiKeyHelp.step1', { link: '{{link}}' }).split('{{link}}')[1]}
                 </li>
@@ -1962,8 +1998,8 @@ export const Settings: React.FC = () => {
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
 
         {/* 服务测试区 */}
         <div className="space-y-4">
@@ -2151,15 +2187,16 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {showTop && (
-        <button
+        <Button
+          variant="ghost"
           data-testid="back-to-top-button"
           aria-label="Back to top"
           title="Back to top"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 p-3 rounded-full bg-banana-500 text-white shadow-lg hover:bg-banana-600 transition-all z-50"
+          className="fixed bottom-6 right-6 h-auto w-auto p-3 rounded-full bg-banana-500 text-white shadow-lg hover:bg-banana-600 hover:text-white transition-all z-50"
         >
           <ArrowUp size={20} />
-        </button>
+        </Button>
       )}
     </div>
   );

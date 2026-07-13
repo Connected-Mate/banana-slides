@@ -6,6 +6,9 @@ import { Sparkles, FileText, FileEdit, ImagePlus, Paperclip, Palette, Lightbulb,
 import { Button, Card, useToast, MaterialGeneratorModal, MaterialCenterModal, MaterialSelector, ReferenceFileList, ReferenceFileSelector, FilePreviewModal, HelpModal, Footer, TextStyleSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { listUserTemplates, type UserTemplate, uploadReferenceFile, type ReferenceFile, associateFileToProject, triggerFileParse, associateMaterialsToProject, createPptRenovationProject } from '@/api/endpoints';
 import { useProjectStore } from '@/store/useProjectStore';
 import { devLog } from '@/utils/logger';
@@ -841,25 +844,23 @@ export const Home: React.FC = () => {
         {/* 创建卡片 */}
         <Card className="p-4 md:p-8 bg-white dark:bg-background-secondary shadow-sm dark:shadow-none border border-gray-200/70 dark:border dark:border-border-primary rounded-2xl">
           {/* 选项卡 */}
-          <div className="flex flex-col sm:flex-row gap-2 mb-5 md:mb-6">
-            {(Object.keys(tabConfig) as CreationType[]).map((type) => {
-              const config = tabConfig[type];
-              return (
-                <button
-                  key={type}
-                  onClick={() => setActiveTab(type)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2.5 rounded-xl font-medium transition-colors text-sm touch-manipulation ${
-                    activeTab === type
-                      ? 'bg-banana-500 dark:bg-banana text-black'
-                      : 'bg-transparent border border-gray-200 dark:border-border-primary text-gray-600 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-background-hover active:bg-banana-100'
-                  }`}
-                >
-                  <span className="scale-90 md:scale-100">{config.icon}</span>
-                  <span className="truncate">{config.label}</span>
-                </button>
-              );
-            })}
-          </div>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as CreationType)}>
+            <TabsList className="h-auto w-full flex-col sm:flex-row gap-2 bg-transparent p-0 mb-5 md:mb-6">
+              {(Object.keys(tabConfig) as CreationType[]).map((type) => {
+                const config = tabConfig[type];
+                return (
+                  <TabsTrigger
+                    key={type}
+                    value={type}
+                    className="flex-1 w-full flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2.5 rounded-xl font-medium transition-colors text-sm touch-manipulation border border-gray-200 dark:border-border-primary text-gray-600 dark:text-foreground-secondary hover:bg-banana-50 dark:hover:bg-background-hover active:bg-banana-100 data-[state=active]:bg-banana-500 dark:data-[state=active]:bg-banana data-[state=active]:text-black data-[state=active]:border-transparent data-[state=active]:shadow-none"
+                  >
+                    <span className="scale-90 md:scale-100">{config.icon}</span>
+                    <span className="truncate">{config.label}</span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </Tabs>
 
           {/* 描述 */}
           <div className="relative">
@@ -997,33 +998,29 @@ export const Home: React.FC = () => {
                     <Paperclip size={18} />
                   </button>
                   {/* 画面比例选择 */}
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setIsAspectRatioOpen(!isAspectRatioOpen)}
-                      className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-foreground-tertiary dark:hover:text-foreground-secondary dark:hover:bg-background-hover rounded transition-colors"
-                      title={i18n.language?.startsWith('zh') ? '画面比例' : 'Aspect Ratio'}
-                    >
-                      <span>{aspectRatio}</span>
-                      <ChevronDown size={12} className={`transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    {isAspectRatioOpen && (
-                      <>
-                        <div className="fixed inset-0 z-40" onClick={() => setIsAspectRatioOpen(false)} />
-                        <div className="absolute left-0 bottom-full mb-1 z-50 bg-white dark:bg-background-elevated border border-gray-200 dark:border-border-primary rounded-lg shadow-lg dark:shadow-none py-1 min-w-[80px]">
-                          {ASPECT_RATIO_OPTIONS.map((opt) => (
-                            <button
-                              key={opt.value}
-                              onClick={() => { setAspectRatio(opt.value); setIsAspectRatioOpen(false); }}
-                              className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-background-hover transition-colors ${aspectRatio === opt.value ? 'text-banana font-semibold' : 'text-gray-700 dark:text-foreground-secondary'}`}
-                            >
-                              {opt.label}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  <DropdownMenu open={isAspectRatioOpen} onOpenChange={setIsAspectRatioOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-foreground-tertiary dark:hover:text-foreground-secondary dark:hover:bg-background-hover rounded transition-colors"
+                        title={i18n.language?.startsWith('zh') ? '画面比例' : 'Aspect Ratio'}
+                      >
+                        <span>{aspectRatio}</span>
+                        <ChevronDown size={12} className={`transition-transform ${isAspectRatioOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-[80px] dark:bg-background-elevated dark:border-border-primary">
+                      {ASPECT_RATIO_OPTIONS.map((opt) => (
+                        <DropdownMenuItem
+                          key={opt.value}
+                          onSelect={() => setAspectRatio(opt.value)}
+                          className={`text-xs cursor-pointer ${aspectRatio === opt.value ? 'text-banana font-semibold' : 'text-gray-700 dark:text-foreground-secondary'}`}
+                        >
+                          {opt.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               }
               toolbarRight={
@@ -1068,19 +1065,19 @@ export const Home: React.FC = () => {
           />
 
           {/* 风格与模板 — 折叠，默认隐藏（progressive disclosure） */}
-          <div className="mt-2 pt-4 border-t border-gray-100 dark:border-border-primary">
-            <button
-              type="button"
-              onClick={() => setShowStyleOptions(v => !v)}
-              className="flex items-center gap-2 text-meta font-medium text-gray-500 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-white transition-colors"
-              aria-expanded={showStyleOptions}
-            >
-              <Palette size={14} className="flex-shrink-0" />
-              <span>{t('home.actions.styleOptions')}</span>
-              <ChevronDown size={13} className={`transition-transform ${showStyleOptions ? 'rotate-180' : ''}`} />
-            </button>
+          <Collapsible open={showStyleOptions} onOpenChange={setShowStyleOptions} className="mt-2 pt-4 border-t border-gray-100 dark:border-border-primary">
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-2 text-meta font-medium text-gray-500 dark:text-foreground-tertiary hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                <Palette size={14} className="flex-shrink-0" />
+                <span>{t('home.actions.styleOptions')}</span>
+                <ChevronDown size={13} className={`transition-transform ${showStyleOptions ? 'rotate-180' : ''}`} />
+              </button>
+            </CollapsibleTrigger>
 
-            {showStyleOptions && (
+            <CollapsibleContent>
               <div className="mt-4 space-y-4 animate-slide-in-up">
                 <div className="flex items-center justify-between">
                   <h3 className="text-body font-semibold text-gray-900 dark:text-foreground-primary">
@@ -1143,8 +1140,8 @@ export const Home: React.FC = () => {
                   />
                 )}
               </div>
-            )}
-          </div>
+            </CollapsibleContent>
+          </Collapsible>
 
         </Card>
       </main>

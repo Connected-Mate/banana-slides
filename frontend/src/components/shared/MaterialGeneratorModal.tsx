@@ -22,6 +22,10 @@ import { MaterialSelector, materialUrlToFile } from './MaterialSelector';
 import { ASPECT_RATIO_OPTIONS } from '@/config/aspectRatio';
 import { useProjectStore } from '@/store/useProjectStore';
 import { Skeleton } from './Loading';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/utils';
 import {
   getTaskStatus,
   processMaterialImage,
@@ -679,33 +683,37 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
       <div className={`grid gap-6 ${isFullscreen ? 'xl:grid-cols-[360px_minmax(0,1fr)]' : 'lg:grid-cols-[320px_minmax(0,1fr)]'}`}>
         <aside className="space-y-5 lg:pr-6 lg:border-r lg:border-gray-200 dark:lg:border-border-primary">
           <section className="space-y-2">
-            <div className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">
+            <Label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary">
               {t('material.toolModeLabel')}
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {TOOL_CARDS.map((tool) => (
-                <button
-                  key={tool.value}
-                  type="button"
-                  onClick={() => {
-                    setToolMode(tool.value);
-                    if (isCompleted) setIsCompleted(false);
-                  }}
-                  title={t(tool.descKey)}
-                  className={`rounded-lg border px-2.5 py-2 text-left transition-all ${
-                    toolMode === tool.value
-                      ? 'border-banana-500 bg-banana-50 dark:bg-background-secondary shadow-sm'
-                      : 'border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary hover:border-gray-300 dark:hover:border-gray-500'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-800 dark:text-foreground-primary">
-                    <span className={toolMode === tool.value ? 'text-banana-600 dark:text-banana' : 'text-gray-400 dark:text-foreground-tertiary'}>
-                      {tool.icon}
-                    </span>
-                    {t(tool.labelKey)}
-                  </div>
-                </button>
-              ))}
+            </Label>
+            <div className="grid w-full grid-cols-2 gap-1.5" role="group" aria-label={t('material.toolModeLabel')}>
+              {TOOL_CARDS.map((tool) => {
+                const active = toolMode === tool.value;
+                return (
+                  <button
+                    key={tool.value}
+                    type="button"
+                    aria-pressed={active}
+                    title={t(tool.descKey)}
+                    onClick={() => {
+                      setToolMode(tool.value as MaterialProcessOperation);
+                      if (isCompleted) setIsCompleted(false);
+                    }}
+                    className={cn(
+                      'h-auto justify-start whitespace-normal rounded-lg border px-2.5 py-2 text-left shadow-none transition-all',
+                      'border-gray-200 bg-white hover:border-gray-300 dark:border-border-primary dark:bg-background-secondary dark:hover:border-gray-500',
+                      active && 'border-banana-500 bg-banana-50 shadow-sm dark:bg-background-secondary'
+                    )}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-800 dark:text-foreground-primary">
+                      <span className={active ? 'text-banana-600 dark:text-banana' : 'text-gray-400 dark:text-foreground-tertiary'}>
+                        {tool.icon}
+                      </span>
+                      {t(tool.labelKey)}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </section>
 
@@ -722,24 +730,27 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
 
           {toolMode === 'generate' && (
             <section className="space-y-2">
-              <div className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('material.aspectRatioLabel')}</div>
+              <Label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('material.aspectRatioLabel')}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {ASPECT_RATIO_OPTIONS.map((opt) => (
-                  <button
+                  <Button
                     key={opt.value}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => {
                       setAspectRatio(opt.value);
                       if (isCompleted) setIsCompleted(false);
                     }}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                    className={cn(
+                      'h-auto rounded-lg border px-3 py-1.5 text-xs font-medium normal-case',
                       aspectRatio === opt.value
-                        ? 'border-banana-500 bg-banana-50 dark:bg-background-secondary text-banana-700 dark:text-banana'
-                        : 'border-gray-200 dark:border-border-primary text-gray-600 dark:text-foreground-secondary hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-background-secondary'
-                    }`}
+                        ? 'border-banana-500 bg-banana-50 text-banana-700 hover:bg-banana-50 dark:bg-background-secondary dark:text-banana'
+                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 dark:border-border-primary dark:bg-background-secondary dark:text-foreground-secondary dark:hover:border-gray-500'
+                    )}
                   >
                     {opt.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </section>
@@ -747,30 +758,34 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
 
           {toolMode === 'region_edit' && (
             <section className="space-y-2">
-              <div className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('material.applyModeLabel')}</div>
+              <Label className="block text-sm font-medium text-gray-700 dark:text-foreground-secondary">{t('material.applyModeLabel')}</Label>
               <div className="grid grid-cols-1 gap-2">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setApplyMode('overlay_selection')}
-                  className={`rounded-lg border px-3 py-2.5 text-left transition-all ${
+                  className={cn(
+                    'h-auto justify-start rounded-lg border px-3 py-2.5 text-left normal-case',
                     applyMode === 'overlay_selection'
-                      ? 'border-banana-500 bg-banana-50 dark:bg-background-secondary'
-                      : 'border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary'
-                  }`}
+                      ? 'border-banana-500 bg-banana-50 hover:bg-banana-50 dark:bg-background-secondary'
+                      : 'border-gray-200 bg-white dark:border-border-primary dark:bg-background-secondary'
+                  )}
                 >
                   <div className="text-sm font-semibold text-gray-800 dark:text-foreground-primary">{t('material.applyOverlay')}</div>
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setApplyMode('replace_full')}
-                  className={`rounded-lg border px-3 py-2.5 text-left transition-all ${
+                  className={cn(
+                    'h-auto justify-start rounded-lg border px-3 py-2.5 text-left normal-case',
                     applyMode === 'replace_full'
-                      ? 'border-banana-500 bg-banana-50 dark:bg-background-secondary'
-                      : 'border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary'
-                  }`}
+                      ? 'border-banana-500 bg-banana-50 hover:bg-banana-50 dark:bg-background-secondary'
+                      : 'border-gray-200 bg-white dark:border-border-primary dark:bg-background-secondary'
+                  )}
                 >
                   <div className="text-sm font-semibold text-gray-800 dark:text-foreground-primary">{t('material.applyReplaceFull')}</div>
-                </button>
+                </Button>
               </div>
             </section>
           )}
@@ -779,7 +794,7 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-800 dark:text-foreground-primary font-medium">
                 <ImagePlus size={17} className="text-banana-600 dark:text-banana-400" />
-                <span>{t('material.referenceImages')}</span>
+                <Label>{t('material.referenceImages')}</Label>
               </div>
               <Button
                 variant="ghost"
@@ -791,8 +806,8 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
 
             <div className="flex flex-wrap gap-2 items-start">
               <div className="space-y-1.5">
-                <div className="text-xs text-gray-500 dark:text-foreground-tertiary">{t('material.mainReference')}</div>
-                <div className="w-20 h-20 border border-dashed border-gray-300 dark:border-border-primary rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-banana-400 dark:hover:border-banana-500 hover:bg-banana-50/60 dark:hover:bg-background-hover transition-all bg-white dark:bg-background-secondary relative group">
+                <Label className="block text-xs font-normal text-gray-500 dark:text-foreground-tertiary">{t('material.mainReference')}</Label>
+                <Card className="w-20 h-20 rounded-lg border border-dashed border-gray-300 dark:border-border-primary flex flex-col items-center justify-center cursor-pointer hover:border-banana-400 dark:hover:border-banana-500 hover:bg-banana-50/60 dark:hover:bg-background-hover transition-all bg-white dark:bg-background-secondary relative group shadow-none">
                   {refImage ? (
                     <>
                       <img
@@ -831,11 +846,11 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
                     className="hidden"
                     onChange={handleRefImageChange}
                   />
-                </div>
+                </Card>
               </div>
 
               <div className="min-w-0 space-y-1.5">
-                <div className="text-xs text-gray-500 dark:text-foreground-tertiary">{t('material.extraReference')}</div>
+                <Label className="block text-xs font-normal text-gray-500 dark:text-foreground-tertiary">{t('material.extraReference')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {extraImages.map((file, idx) => (
                     <div key={`${file.name}-${idx}`} className="relative group">
@@ -852,14 +867,16 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
                       </button>
                     </div>
                   ))}
-                  <button
-                    data-testid="material-extra-trigger"
-                    type="button"
-                    onClick={() => extraInputRef.current?.click()}
-                    className="w-14 h-14 border border-dashed border-gray-300 dark:border-border-primary rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-banana-400 dark:hover:border-banana-500 hover:bg-banana-50/60 dark:hover:bg-background-hover transition-all bg-white dark:bg-background-secondary"
-                  >
-                    <Upload size={14} className="text-gray-400 dark:text-foreground-tertiary" />
-                  </button>
+                  <Card className="relative w-14 h-14 overflow-hidden rounded-lg border border-dashed border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary shadow-none transition-all hover:border-banana-400 hover:bg-banana-50/60 dark:hover:border-banana-500 dark:hover:bg-background-hover">
+                    <button
+                      type="button"
+                      data-testid="material-extra-trigger"
+                      onClick={() => extraInputRef.current?.click()}
+                      className="flex h-full w-full flex-col items-center justify-center"
+                    >
+                      <Upload size={14} className="text-gray-400 dark:text-foreground-tertiary" />
+                    </button>
+                  </Card>
                   <input
                     ref={extraInputRef}
                     data-testid="material-extra-input"
@@ -891,7 +908,7 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
 
         <section className="min-w-0 flex flex-col">
           <div className="grid grid-cols-2 gap-4 flex-1">
-            <div className="rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary p-4 flex flex-col">
+            <Card className="rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary p-4 flex flex-col shadow-none">
               <div className="flex items-center justify-between gap-3 mb-3">
                 <h4 className="text-sm font-semibold text-gray-800 dark:text-foreground-primary flex items-center gap-2">
                   <Layers size={16} className="text-banana-600 dark:text-banana-400" />
@@ -972,19 +989,23 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
 
               {selectionEnabled && (
                 <div className="mt-3 p-3 rounded-lg bg-banana-50 dark:bg-banana-900/10">
-                  <div className="text-xs font-semibold text-gray-700 dark:text-foreground-primary mb-1">
+                  <Label className="block text-xs font-semibold text-gray-700 dark:text-foreground-primary mb-1">
                     {t('material.selectionLabel')}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-foreground-tertiary">
-                    {selectionPixels
-                      ? t('material.selectionReady', { width: selectionPixels.width, height: selectionPixels.height })
-                      : t('material.selectionHint')}
-                  </div>
+                  </Label>
+                  {selectionPixels ? (
+                    <Badge variant="secondary" className="font-normal text-gray-600 dark:text-foreground-tertiary">
+                      {t('material.selectionReady', { width: selectionPixels.width, height: selectionPixels.height })}
+                    </Badge>
+                  ) : (
+                    <div className="text-xs text-gray-500 dark:text-foreground-tertiary">
+                      {t('material.selectionHint')}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+            </Card>
 
-            <div className="rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary p-4 flex flex-col">
+            <Card className="rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary p-4 flex flex-col shadow-none">
               <div className="flex items-center justify-between gap-3 mb-3">
                 <h4 className="text-sm font-semibold text-gray-800 dark:text-foreground-primary flex items-center gap-2">
                   <Sparkles size={16} className="text-banana-600 dark:text-banana-400" />
@@ -1025,7 +1046,7 @@ export const MaterialGeneratorModal: React.FC<MaterialGeneratorModalProps> = ({
                   <div className="font-medium">{t('material.generatedPreview')}</div>
                 </div>
               )}
-            </div>
+            </Card>
           </div>
         </section>
       </div>

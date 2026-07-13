@@ -4,6 +4,8 @@ import { Button } from './Button';
 import { useT } from '@/hooks/useT';
 import { useToast } from './Toast';
 import { Modal } from './Modal';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { listMaterials, uploadMaterial, listProjects, deleteMaterial, downloadMaterialsZip, type Material } from '@/api/endpoints';
 import type { Project } from '@/types';
 import { getImageUrl } from '@/api/client';
@@ -209,9 +211,9 @@ const ToolbarSection: React.FC<{
             : t('mc.empty')}
         </span>
         {state.selected.size > 0 && (
-          <span className="ml-2 text-banana-600 font-medium">
+          <Badge variant="secondary" className="ml-2 text-banana-600 font-medium">
             {t('mc.selected', { count: state.selected.size })}
-          </span>
+          </Badge>
         )}
         {state.loading && state.items.length > 0 && (
           <RefreshCw size={14} className="animate-spin text-gray-400" />
@@ -365,8 +367,13 @@ const PreviewOverlay: React.FC<{ url: string; label: string; t: ReturnType<typeo
   t,
   onClose,
 }) => (
-  <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60]" onClick={onClose}>
-    <div className="relative max-w-[90vw] max-h-[90vh]">
+  <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+    <DialogContent
+      hideClose
+      aria-describedby={undefined}
+      className="w-auto max-w-[90vw] max-h-[90vh] grid-cols-1 border-none bg-transparent p-0 shadow-none"
+    >
+      <DialogTitle className="sr-only">{label}</DialogTitle>
       <button
         type="button"
         onClick={onClose}
@@ -375,10 +382,10 @@ const PreviewOverlay: React.FC<{ url: string; label: string; t: ReturnType<typeo
       >
         <X size={24} />
       </button>
-      <img src={url} alt={label} className="max-w-full max-h-[85vh] object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
+      <img src={url} alt={label} className="max-w-full max-h-[85vh] object-contain rounded-lg" />
       <div className="text-center text-white text-sm mt-2 truncate max-w-[90vw]">{label}</div>
-    </div>
-  </div>
+    </DialogContent>
+  </Dialog>
 );
 
 // ---------------------------------------------------------------------------

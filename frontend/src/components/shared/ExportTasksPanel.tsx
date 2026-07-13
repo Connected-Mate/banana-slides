@@ -5,6 +5,8 @@ import { useT } from '@/hooks/useT';
 import type { Page } from '@/types';
 import { Button } from './Button';
 import { useConfirm } from './ConfirmDialog';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/utils';
 import * as api from '@/api/endpoints';
 
@@ -106,29 +108,31 @@ const WarningsModal: React.FC<{
   warningDetails?: any;
 }> = ({ isOpen, onClose, warnings, warningDetails }) => {
   const t = useT(exportI18n);
-  
-  if (!isOpen) return null;
-  
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      
-      <div className="relative bg-white dark:bg-background-secondary rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent
+        hideClose
+        aria-describedby={undefined}
+        className="flex max-h-[80vh] w-full max-w-lg flex-col gap-0 overflow-hidden rounded-lg p-0"
+      >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-border-primary bg-amber-50">
           <div className="flex items-center gap-2">
             <AlertTriangle size={18} className="text-amber-500" />
-            <h3 className="text-base font-semibold text-amber-800">
+            <DialogTitle className="text-base font-semibold text-amber-800">
               {t('export.warningsCount', { count: warnings.length })}
-            </h3>
+            </DialogTitle>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onClose}
-            className="p-1 hover:bg-amber-100 rounded transition-colors"
+            className="p-1 h-auto hover:bg-amber-100"
           >
             <X size={18} className="text-gray-500 dark:text-foreground-tertiary" />
-          </button>
+          </Button>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-4">
           <div className="space-y-2">
             {warnings.map((warning, idx) => (
@@ -185,15 +189,16 @@ const WarningsModal: React.FC<{
         </div>
         
         <div className="px-4 py-3 border-t border-gray-200 dark:border-border-primary bg-gray-50 dark:bg-background-primary">
-          <button
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 dark:text-foreground-secondary rounded-md text-sm font-medium transition-colors"
+            className="w-full bg-gray-200 hover:bg-gray-300 dark:text-foreground-secondary"
           >
             {t('common.close')}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -264,6 +269,7 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
                   )}
                 </div>
                 
+                {/* no shadcn Progress primitive in ui/ yet — kept as hand-rolled bar */}
                 <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
                   <div
                     className="h-full bg-gradient-to-r from-banana-500 to-banana-600 transition-all duration-500 ease-out"
@@ -378,13 +384,15 @@ const TaskItem: React.FC<{ task: ExportTask; pages: Page[]; onRemove: () => void
           </Button>
         )}
         
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onRemove}
-          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          className="p-1 h-auto text-gray-400 hover:text-gray-600"
           title={t('common.delete')}
         >
           <X size={14} />
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -512,9 +520,9 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
             {t('export.tasks')}
           </span>
           {activeTasks.length > 0 && (
-            <span className="px-1.5 py-0.5 text-xs bg-banana-100 text-banana-700 rounded-full">
+            <Badge variant="outline" className="rounded-full border-transparent bg-banana-100 text-banana-700">
               {t('export.inProgress', { count: activeTasks.length })}
-            </span>
+            </Badge>
           )}
         </div>
       </button>
@@ -538,13 +546,15 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
             <div className="p-2">
               <div className="flex items-center justify-between px-3 py-1 mb-1">
                 <span className="text-xs text-gray-400">{t('shared.historyRecords')}</span>
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => clearCompleted(projectId)}
-                  className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1"
+                  className="h-auto gap-1 p-0 text-xs text-gray-400 hover:bg-transparent hover:text-gray-600"
                 >
                   <Trash2 size={12} />
                   {t('export.clearHistory')}
-                </button>
+                </Button>
               </div>
               {completedTasks.map(task => (
                 <TaskItem
@@ -566,15 +576,17 @@ export const ExportTasksPanel: React.FC<ExportTasksPanelProps> = ({ projectId, p
               {deleteError && (
                 <div className="mx-3 mb-2 flex items-center justify-between gap-2 rounded border border-red-200 bg-red-50 px-2 py-1.5 text-xs text-red-700">
                   <span className="break-words">{deleteError}</span>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setDeleteError(null)}
-                    className="flex-shrink-0 rounded p-0.5 text-red-500 transition-colors hover:bg-red-100 hover:text-red-700"
+                    className="h-auto flex-shrink-0 p-0.5 text-red-500 hover:bg-red-100 hover:text-red-700"
                     aria-label={t('export.dismissDeleteError')}
                     title={t('export.dismissDeleteError')}
                   >
                     <X size={12} />
-                  </button>
+                  </Button>
                 </div>
               )}
               {exportedFiles.map(file => (

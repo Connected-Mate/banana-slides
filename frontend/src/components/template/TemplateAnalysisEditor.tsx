@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { RefreshCw, Save, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/shared/Button';
+import { Input } from '@/components/shared/Input';
+import { Textarea } from '@/components/shared/Textarea';
+import { Label } from '@/components/ui/label';
 import { useT } from '@/hooks/useT';
 import { cn } from '@/utils';
 import type { TemplateAsset, TemplateAnalysis, TemplateRegion } from '@/types';
@@ -175,40 +178,44 @@ export const TemplateAnalysisEditor: React.FC<TemplateAnalysisEditorProps> = ({
     <div className="space-y-2">
       {draft[field].map((region, idx) => (
         <div key={idx} className="flex items-center gap-2">
-          <input
+          <Input
             className={inputCls}
             placeholder={t('tae.regionName')}
             value={region.name}
             onChange={(e) => updateRegion(field, idx, 'name', e.target.value)}
           />
-          <input
+          <Input
             className={inputCls}
             placeholder={t('tae.regionPosition')}
             value={region.position}
             onChange={(e) => updateRegion(field, idx, 'position', e.target.value)}
           />
-          <input
+          <Input
             className={inputCls}
             placeholder={t('tae.regionSize')}
             value={region.size}
             onChange={(e) => updateRegion(field, idx, 'size', e.target.value)}
           />
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
+            className="h-auto shrink-0 px-1.5 py-0.5 text-xs text-red-500 hover:text-red-600 hover:bg-transparent"
             onClick={() => removeRegion(field, idx)}
-            className="shrink-0 text-xs text-red-500 hover:text-red-600"
           >
             {t('tae.remove')}
-          </button>
+          </Button>
         </div>
       ))}
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
+        className="h-auto px-1.5 py-0.5 text-xs text-banana-600 hover:text-banana-700 hover:bg-transparent"
         onClick={() => addRegion(field)}
-        className="text-xs text-banana-600 hover:text-banana-700"
       >
         + {t('tae.addRegion')}
-      </button>
+      </Button>
     </div>
   );
 
@@ -230,23 +237,23 @@ export const TemplateAnalysisEditor: React.FC<TemplateAnalysisEditorProps> = ({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className={labelCls}>{t('tae.role')}</label>
-          <input
+          <Label className={labelCls}>{t('tae.role')}</Label>
+          <Input
             className={inputCls}
             value={draft.template_role}
             onChange={(e) => updateField('template_role', e.target.value)}
           />
         </div>
         <div>
-          <label className={labelCls}>{t('tae.layout')}</label>
-          <input
+          <Label className={labelCls}>{t('tae.layout')}</Label>
+          <Input
             className={inputCls}
             value={draft.layout_structure}
             onChange={(e) => updateField('layout_structure', e.target.value)}
           />
         </div>
         <div>
-          <label className={labelCls}>{t('tae.capacity')}</label>
+          <Label className={labelCls}>{t('tae.capacity')}</Label>
           <select
             className={inputCls}
             value={draft.content_capacity}
@@ -262,7 +269,7 @@ export const TemplateAnalysisEditor: React.FC<TemplateAnalysisEditorProps> = ({
           </select>
         </div>
         <div>
-          <label className={labelCls}>{t('tae.density')}</label>
+          <Label className={labelCls}>{t('tae.density')}</Label>
           <select
             className={inputCls}
             value={draft.visual_density}
@@ -280,30 +287,30 @@ export const TemplateAnalysisEditor: React.FC<TemplateAnalysisEditorProps> = ({
       </div>
 
       <div>
-        <label className={labelCls}>{t('tae.textRegions')}</label>
+        <Label className={labelCls}>{t('tae.textRegions')}</Label>
         {renderRegions('text_regions')}
       </div>
       <div>
-        <label className={labelCls}>{t('tae.imageRegions')}</label>
+        <Label className={labelCls}>{t('tae.imageRegions')}</Label>
         {renderRegions('image_regions')}
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className={labelCls}>
+          <Label className={labelCls}>
             {t('tae.keywords')} <span className="text-gray-400">({t('tae.commaHint')})</span>
-          </label>
-          <input
+          </Label>
+          <Input
             className={inputCls}
             value={keywordsText}
             onChange={(e) => setKeywordsText(e.target.value)}
           />
         </div>
         <div>
-          <label className={labelCls}>
+          <Label className={labelCls}>
             {t('tae.palette')} <span className="text-gray-400">({t('tae.commaHint')})</span>
-          </label>
-          <input
+          </Label>
+          <Input
             className={inputCls}
             value={paletteText}
             onChange={(e) => setPaletteText(e.target.value)}
@@ -312,8 +319,8 @@ export const TemplateAnalysisEditor: React.FC<TemplateAnalysisEditorProps> = ({
       </div>
 
       <div>
-        <label className={labelCls}>{t('tae.notes')}</label>
-        <textarea
+        <Label className={labelCls}>{t('tae.notes')}</Label>
+        <Textarea
           className={cn(inputCls, 'min-h-[64px] resize-y')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}

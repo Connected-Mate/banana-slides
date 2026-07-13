@@ -1,6 +1,9 @@
 import React, { useState, memo } from 'react';
 import { Sparkles, History, ChevronDown, ChevronUp, Send } from 'lucide-react';
 import { useT } from '@/hooks/useT';
+import { cn } from '@/utils';
+import { Input } from './Input';
+import { Button } from './Button';
 
 // AiRefineInput 组件自包含翻译
 const aiRefineI18n = {
@@ -140,15 +143,19 @@ const AiRefineInputComponent: React.FC<AiRefineInputProps> = ({
         )}
         
         <div className="flex-1 relative">
-          <input
+          <Input
             type="text"
             value={requirement}
             onChange={(e) => setRequirement(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className={`w-full px-3 py-1.5 text-sm border ${isCompactMode ? 'border-gray-200 dark:border-border-primary' : 'border-gray-300 dark:border-border-primary'} rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500 focus:border-transparent transition-all ${
-              isSubmitting ? 'animate-gradient-x bg-gradient-to-r from-banana-100 via-banana-200 to-banana-100 bg-[length:200%_100%]' : 'bg-white dark:bg-background-secondary'
-            }`}
+            className={cn(
+              'h-9 px-3 py-1.5 text-sm rounded-lg transition-all focus-visible:ring-banana-500',
+              isCompactMode ? 'border-gray-200 dark:border-border-primary' : 'border-gray-300 dark:border-border-primary',
+              isSubmitting
+                ? 'animate-gradient-x bg-gradient-to-r from-banana-100 via-banana-200 to-banana-100 bg-[length:200%_100%]'
+                : 'bg-white dark:bg-background-secondary'
+            )}
             disabled={isSubmitting}
           />
           {isSubmitting && (
@@ -158,20 +165,17 @@ const AiRefineInputComponent: React.FC<AiRefineInputProps> = ({
             </div>
           )}
         </div>
-        
+
         {/* 提交按钮 - 移动端始终显示，桌面端鼠标悬停时显示 */}
-        <button
+        <Button
+          type="button"
+          size="sm"
           onClick={handleSubmit}
           disabled={!requirement.trim() || isSubmitting}
-          className={`flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
-            !requirement.trim() || isSubmitting
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-banana-500 text-black hover:bg-banana-600 active:scale-95'
-          } md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100`}
+          className="h-9 w-9 flex-shrink-0 !p-0 rounded-lg md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
+          icon={<Send size={16} className={isSubmitting ? 'animate-pulse' : ''} />}
           title={t('aiRefine.submitTooltip')}
-        >
-          <Send size={16} className={isSubmitting ? 'animate-pulse' : ''} />
-        </button>
+        />
       </div>
     </div>
   );

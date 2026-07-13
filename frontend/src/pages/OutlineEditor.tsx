@@ -120,6 +120,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { Button, Loading, useConfirm, useToast, AiRefineInput, FilePreviewModal, ReferenceFileList, MaterialSelector, ImportMarkdownModal } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { OutlineCard } from '@/components/outline/OutlineCard';
 import { useProjectStore } from '@/store/useProjectStore';
 import { refineOutline, updateProject, addPages } from '@/api/endpoints';
@@ -207,7 +208,6 @@ export const OutlineEditor: React.FC = () => {
   const mobileTextareaRef = useRef<MarkdownTextareaRef>(null);
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const fileMenuRef = useRef<HTMLDivElement>(null);
   const getInputText = useCallback((project: typeof currentProject) => {
     if (!project) return '';
     if (project.creation_type === 'outline' || project.creation_type === 'ppt_renovation') return project.outline_text || project.idea_prompt || '';
@@ -237,20 +237,17 @@ export const OutlineEditor: React.FC = () => {
     reqTextareaRef.current?.insertAtCursor(markdown + '\n');
   }, []);
 
-  // 点击外部关闭下拉
+  // 点击外部关闭「大纲生成要求」popover（导入/导出改用 DropdownMenu，外部点击由 Radix 自行处理）
   useEffect(() => {
-    if (!fileMenuOpen && !settingsOpen) return;
+    if (!settingsOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (fileMenuRef.current && !fileMenuRef.current.contains(e.target as Node)) {
-        setFileMenuOpen(false);
-      }
       if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
         setSettingsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [fileMenuOpen, settingsOpen]);
+  }, [settingsOpen]);
 
   // 项目切换时：强制加载文本
   useEffect(() => {
@@ -659,39 +656,36 @@ export const OutlineEditor: React.FC = () => {
               )}
             </div>
             {/* 导入导出下拉菜单 */}
-            <div className="relative" ref={fileMenuRef}>
-              <Button
-                variant="secondary"
-                onClick={() => setFileMenuOpen(!fileMenuOpen)}
-                icon={<FileText size={16} className="md:w-[18px] md:h-[18px]" />}
-                className="flex-1 sm:flex-initial text-sm md:text-base"
-              >
-                {t('outline.importExport')}
-                <ChevronDown size={14} className={`ml-1 transition-transform duration-200 ${fileMenuOpen ? 'rotate-180' : ''}`} />
-              </Button>
-              {fileMenuOpen && (
-                <div className="absolute top-full left-0 mt-1 z-50 w-full rounded-lg border border-gray-200 dark:border-border-primary bg-white dark:bg-background-secondary shadow-lg dark:shadow-none overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => { handleExportOutline(); setFileMenuOpen(false); }}
-                    disabled={currentProject.pages.length === 0}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:bg-gray-50 dark:hover:bg-background-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
-                  >
-                    <Download size={14} />
-                    {t('outline.export')}
-                  </button>
-                  <div className="border-t border-gray-100 dark:border-border-primary" />
-                  <button
-                    type="button"
-                    onClick={() => { setIsImportModalOpen(true); setFileMenuOpen(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary hover:bg-gray-50 dark:hover:bg-background-hover transition-colors duration-150"
-                  >
-                    <Upload size={14} />
-                    {t('outline.import')}
-                  </button>
-                </div>
-              )}
-            </div>
+            <DropdownMenu open={fileMenuOpen} onOpenChange={setFileMenuOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="secondary"
+                  icon={<FileText size={16} className="md:w-[18px] md:h-[18px]" />}
+                  className="flex-1 sm:flex-initial text-sm md:text-base"
+                >
+                  {t('outline.importExport')}
+                  <ChevronDown size={14} className={`ml-1 transition-transform duration-200 ${fileMenuOpen ? 'rotate-180' : ''}`} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="min-w-[10rem]">
+                <DropdownMenuItem
+                  onClick={handleExportOutline}
+                  disabled={currentProject.pages.length === 0}
+                  className="gap-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary"
+                >
+                  <Download size={14} />
+                  {t('outline.export')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="gap-2 text-xs font-medium text-gray-600 dark:text-foreground-tertiary"
+                >
+                  <Upload size={14} />
+                  {t('outline.import')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {/* 手机端：保存按钮 */}
             <Button
               variant="secondary"

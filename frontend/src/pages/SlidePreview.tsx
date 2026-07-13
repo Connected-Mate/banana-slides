@@ -296,14 +296,18 @@ import {
   LayoutTemplate,
   MoreHorizontal,
 } from 'lucide-react';
-import { Button, IconButton, Loading, Modal, Textarea, useToast, useConfirm, MaterialSelector, ProjectSettingsModal, ExportTasksPanel, TextStyleSelector } from '@/components/shared';
+import { Button, IconButton, Input, Loading, Modal, Textarea, useToast, useConfirm, MaterialSelector, ProjectSettingsModal, ExportTasksPanel, TextStyleSelector } from '@/components/shared';
 import { SwitchToSingleModeDialog } from '@/components/template/SwitchToSingleModeDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { MaterialGeneratorModal } from '@/components/shared/MaterialGeneratorModal';
 import { TemplateSelector, getTemplateFile } from '@/components/shared/TemplateSelector';
 import { listUserTemplates, type UserTemplate } from '@/api/endpoints';
@@ -1819,79 +1823,82 @@ export const SlidePreview: React.FC = () => {
               )}
             </div>
           
-          <div className="relative">
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<Download size={16} className="md:w-[18px] md:h-[18px]" />}
-              onClick={() => {
-                setShowExportMenu(!showExportMenu);
-                setShowExportTasksPanel(false);
-              }}
-              disabled={isMultiSelectMode && selectedPageIds.size === 0}
-              title={exportRangeMissingTip}
-              className="text-xs md:text-sm"
-            >
-              <span className="hidden sm:inline">
-                {isMultiSelectMode && selectedPageIds.size > 0 
-                  ? `${t('preview.export')} (${selectedPageIds.size})` 
-                  : t('preview.export')}
-              </span>
-              <span className="sm:hidden">
-                {isMultiSelectMode && selectedPageIds.size > 0 
-                  ? `(${selectedPageIds.size})` 
-                  : t('preview.export')}
-              </span>
-            </Button>
-            {showExportMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-background-secondary rounded-lg shadow-lg border border-gray-200 dark:border-border-primary py-2 z-10">
-                {isMultiSelectMode && selectedPageIds.size > 0 && (
-                  <div className="px-4 py-2 text-xs text-gray-500 dark:text-foreground-tertiary border-b border-gray-100 dark:border-border-primary">
-                    {t('preview.exportSelectedPages', { count: selectedPageIds.size })}
-                  </div>
-                )}
+          <DropdownMenu open={showExportMenu} onOpenChange={setShowExportMenu}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="primary"
+                size="sm"
+                icon={<Download size={16} className="md:w-[18px] md:h-[18px]" />}
+                onClick={() => setShowExportTasksPanel(false)}
+                disabled={isMultiSelectMode && selectedPageIds.size === 0}
+                title={exportRangeMissingTip}
+                className="text-xs md:text-sm"
+              >
+                <span className="hidden sm:inline">
+                  {isMultiSelectMode && selectedPageIds.size > 0
+                    ? `${t('preview.export')} (${selectedPageIds.size})`
+                    : t('preview.export')}
+                </span>
+                <span className="sm:hidden">
+                  {isMultiSelectMode && selectedPageIds.size > 0
+                    ? `(${selectedPageIds.size})`
+                    : t('preview.export')}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {isMultiSelectMode && selectedPageIds.size > 0 && (
+                <DropdownMenuLabel className="text-xs font-normal text-gray-500 dark:text-foreground-tertiary">
+                  {t('preview.exportSelectedPages', { count: selectedPageIds.size })}
+                </DropdownMenuLabel>
+              )}
+              {/* asChild + <button> natif : gardé cliquable/disabled nativement (couplage e2e pptx-export-panel.spec.ts sur button:has-text) */}
+              <DropdownMenuItem asChild className="p-0">
                 <button
-                  onClick={() => {
-                    setShowExportMenu(false);
-                    setShowPptxExportDialog(true);
-                  }}
+                  onClick={() => setShowPptxExportDialog(true)}
                   disabled={!exportRangeHasAllImages}
                   title={exportRangeMissingTip}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full px-2 py-1.5 text-left text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {t('preview.exportPptx')}
                 </button>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="p-0">
                 <button
                   onClick={() => {
-                    setShowExportMenu(false);
                     setEditablePptxDialogIconTransparent(currentProject?.enable_icon_subject_extraction ?? true);
                     setShowEditablePptxDialog(true);
                   }}
                   disabled={!exportRangeHasAllImages}
                   title={exportRangeMissingTip}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full px-2 py-1.5 text-left text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {t('preview.exportEditablePptx')}
                 </button>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="p-0">
                 <button
                   onClick={() => handleExport('pdf')}
                   disabled={!exportRangeHasAllImages}
                   title={exportRangeMissingTip}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full px-2 py-1.5 text-left text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {t('preview.exportPdf')}
                 </button>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="p-0">
                 <button
                   onClick={() => handleExport('images')}
                   disabled={!exportRangeHasAllImages}
                   title={exportRangeMissingTip}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full px-2 py-1.5 text-left text-sm disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {t('preview.exportImages')}
                 </button>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="p-0">
                 <button
                   onClick={async () => {
-                    setShowExportMenu(false);
                     try {
                       const res = await getSettings();
                       const hasKey = (res.data?.elevenlabs_api_key_length ?? 0) > 0;
@@ -1909,28 +1916,30 @@ export const SlidePreview: React.FC = () => {
                         }
                         setElevenLabsVoicesLoading(false);
                       }
-                  } catch (error) {
-                    console.error('Failed to load settings before video export:', error);
-                  }
-                  setVideoIncludeNoImage(false);
-                  setShowVideoExportDialog(true);
-                }}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors text-sm"
+                    } catch (error) {
+                      console.error('Failed to load settings before video export:', error);
+                    }
+                    setVideoIncludeNoImage(false);
+                    setShowVideoExportDialog(true);
+                  }}
+                  className="w-full px-2 py-1.5 text-left text-sm"
                 >
                   {t('preview.exportVideo')}
                 </button>
-              </div>
-            )}
-          </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
       {/* PPTX 导出设置弹窗 */}
-      {showPptxExportDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPptxExportDialog(false)}>
-          <div className="bg-white dark:bg-background-secondary rounded-2xl shadow-xl p-6 w-full max-w-xl mx-4" onClick={e => e.stopPropagation()}>
-            <h3 className="font-display text-lg font-semibold">{t('preview.pptxExportTitle')}</h3>
-            <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.pptxExportSubtitle')}</p>
+      <Modal
+        isOpen={showPptxExportDialog}
+        onClose={() => setShowPptxExportDialog(false)}
+        title={t('preview.pptxExportTitle')}
+        size="lg"
+      >
+        <p className="text-sm text-gray-500 dark:text-foreground-tertiary -mt-2 mb-5">{t('preview.pptxExportSubtitle')}</p>
 
             <div className="space-y-4">
               <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-background-hover">
@@ -1987,13 +1996,11 @@ export const SlidePreview: React.FC = () => {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowPptxExportDialog(false)}
-                className="px-4 py-2 text-sm text-gray-600 dark:text-foreground-tertiary hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors"
-              >
+              <Button variant="ghost" onClick={() => setShowPptxExportDialog(false)}>
                 {t('preview.pptxCancel')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={() => {
                   setShowPptxExportDialog(false);
                   handleExport('pptx', {
@@ -2002,21 +2009,20 @@ export const SlidePreview: React.FC = () => {
                   });
                 }}
                 disabled={pptxTransitionsEnabled && pptxTransitionEffects.length === 0}
-                className="px-4 py-2 text-sm bg-banana-500 text-white rounded-lg hover:bg-banana-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {t('preview.pptxStartExport')}
-              </button>
+              </Button>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* 视频导出设置弹窗 */}
-      {showVideoExportDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowVideoExportDialog(false)}>
-          <div className="bg-white dark:bg-background-secondary rounded-2xl shadow-xl p-6 w-[680px] max-w-[96vw] max-h-[88vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <h3 className="font-display text-lg font-semibold">{t('preview.videoExportTitle')}</h3>
-            <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.videoExportSubtitle')}</p>
+      <Modal
+        isOpen={showVideoExportDialog}
+        onClose={() => setShowVideoExportDialog(false)}
+        title={t('preview.videoExportTitle')}
+        size="xl"
+      >
+        <p className="text-sm text-gray-500 dark:text-foreground-tertiary -mt-2 mb-5">{t('preview.videoExportSubtitle')}</p>
             <div className="space-y-5">
               <div className="rounded-xl border border-gray-200 dark:border-border-primary p-4 space-y-4">
                 <div className="flex items-center justify-between gap-4">
@@ -2231,19 +2237,18 @@ export const SlidePreview: React.FC = () => {
               </div>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={videoEnableKenBurns}
-                    onChange={e => setVideoEnableKenBurns(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-banana-500 focus:ring-banana-500"
-                  />
+                  <Switch checked={videoEnableKenBurns} onCheckedChange={setVideoEnableKenBurns} />
                   <span className="text-sm">{t('preview.videoEnableKenBurns')}</span>
-                  <span className="relative group">
-                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 dark:bg-background-hover text-[10px] text-gray-500 dark:text-foreground-secondary cursor-help">?</span>
-                    <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 px-2.5 py-1.5 text-xs text-white bg-gray-800 dark:bg-background-elevated dark:text-foreground-primary rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                      {t('preview.videoKenBurnsTip')}
-                    </span>
-                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 dark:bg-background-hover text-[10px] text-gray-500 dark:text-foreground-secondary cursor-help">?</span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-64 text-xs">
+                        {t('preview.videoKenBurnsTip')}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
@@ -2262,36 +2267,32 @@ export const SlidePreview: React.FC = () => {
               </div>
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowVideoExportDialog(false)}
-                className="px-4 py-2 text-sm text-gray-600 dark:text-foreground-tertiary hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors"
-              >
+              <Button variant="ghost" onClick={() => setShowVideoExportDialog(false)}>
                 {t('preview.videoCancel')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={() => { setShowVideoExportDialog(false); handleExport('video'); }}
                 disabled={!exportRangeHasAllImages && !videoIncludeNoImage}
                 title={!exportRangeHasAllImages && !videoIncludeNoImage ? exportRangeMissingTip : undefined}
-                className="px-4 py-2 text-sm bg-banana-500 text-white rounded-lg hover:bg-banana-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {t('preview.videoStartExport')}
-              </button>
+              </Button>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
-      {showEditablePptxDialog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowEditablePptxDialog(false)}>
-          <div className="bg-white dark:bg-background-secondary rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-display text-lg font-semibold">{t('preview.editablePptxDialogTitle')}</h3>
-            <p className="text-sm text-gray-500 dark:text-foreground-tertiary mt-1 mb-5">{t('preview.editablePptxDialogSubtitle')}</p>
+      <Modal
+        isOpen={showEditablePptxDialog}
+        onClose={() => setShowEditablePptxDialog(false)}
+        title={t('preview.editablePptxDialogTitle')}
+        size="md"
+      >
+            <p className="text-sm text-gray-500 dark:text-foreground-tertiary -mt-2 mb-5">{t('preview.editablePptxDialogSubtitle')}</p>
             <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-background-hover">
-              <input
-                type="checkbox"
+              <Switch
                 checked={editablePptxDialogIconTransparent}
-                onChange={(e) => setEditablePptxDialogIconTransparent(e.target.checked)}
-                className="w-4 h-4 mt-0.5 rounded border-gray-300 text-banana-500 focus:ring-banana-500"
+                onCheckedChange={setEditablePptxDialogIconTransparent}
+                className="mt-0.5"
               />
               <div className="flex-1">
                 <div className="text-sm font-medium">{t('preview.editablePptxIconTransparent')}</div>
@@ -2321,20 +2322,27 @@ export const SlidePreview: React.FC = () => {
                     <div className="text-xs font-medium text-gray-500 dark:text-foreground-tertiary">{t('preview.editablePptxRangeLabel')}</div>
                     <div className="text-sm mt-0.5 break-words">{rangeText}</div>
                   </div>
-                  <span className="flex-shrink-0 text-gray-400 dark:text-foreground-tertiary cursor-help" title={t('preview.editablePptxRangeTip')}>
-                    <Info size={16} />
-                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="flex-shrink-0 text-gray-400 dark:text-foreground-tertiary cursor-help">
+                          <Info size={16} />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-64 text-xs">
+                        {t('preview.editablePptxRangeTip')}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               );
             })()}
             <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowEditablePptxDialog(false)}
-                className="px-4 py-2 text-sm text-gray-600 dark:text-foreground-tertiary hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors"
-              >
+              <Button variant="ghost" onClick={() => setShowEditablePptxDialog(false)}>
                 {t('preview.editablePptxCancel')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={async () => {
                   setShowEditablePptxDialog(false);
                   if (projectId && (currentProject?.enable_icon_subject_extraction ?? true) !== editablePptxDialogIconTransparent) {
@@ -2348,14 +2356,11 @@ export const SlidePreview: React.FC = () => {
                   }
                   handleExport('editable-pptx');
                 }}
-                className="px-4 py-2 text-sm bg-banana-500 text-white rounded-lg hover:bg-banana-600 transition-colors"
               >
                 {t('preview.editablePptxStartExport')}
-              </button>
+              </Button>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* 主内容区 */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-w-0 min-h-0">
@@ -2603,23 +2608,13 @@ export const SlidePreview: React.FC = () => {
                       <span className="hidden md:inline text-xs font-medium text-gray-700 dark:text-foreground-secondary whitespace-nowrap">
                         {t('preview.qualityControl')}
                       </span>
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={imageQualityControlEnabled}
+                      <Switch
                         aria-label={t('preview.qualityControl')}
-                        onClick={handleToggleImageQualityControl}
+                        checked={imageQualityControlEnabled}
+                        onCheckedChange={handleToggleImageQualityControl}
                         disabled={isSavingImageQualityControl}
-                        className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-banana-500 focus:ring-offset-2 disabled:opacity-60 ${
-                          imageQualityControlEnabled ? 'bg-banana-500' : 'bg-gray-300 dark:bg-background-hover'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                            imageQualityControlEnabled ? 'translate-x-5' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
+                        className="disabled:opacity-60"
+                      />
                       <span
                         data-testid="quality-control-tooltip"
                         className="absolute left-1/2 bottom-full z-50 mb-2 w-72 max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-md border border-gray-200 bg-white px-3 py-2 text-left text-xs leading-relaxed text-gray-700 opacity-0 shadow-lg transition-opacity pointer-events-none group-hover/qc:opacity-100 group-focus-within/qc:opacity-100 dark:border-border-primary dark:bg-background-elevated dark:text-foreground-secondary"
@@ -2631,79 +2626,68 @@ export const SlidePreview: React.FC = () => {
                       </span>
                     </div>
                     {/* 手机端：模板更换按钮 */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <IconButton
                       icon={<Upload size={16} />}
+                      label={t('preview.changeTemplate')}
                       onClick={() => { setDraftTemplateStyle(templateStyle); setIsTemplateModalOpen(true); }}
-                      className="lg:hidden text-xs"
-                      title={t('preview.changeTemplate')}
+                      className="lg:hidden"
                     />
                     {/* 手机端：素材生成按钮 */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <IconButton
                       icon={<ImagePlus size={16} />}
+                      label={t('nav.materialGenerate')}
                       onClick={() => setIsMaterialModalOpen(true)}
-                      className="lg:hidden text-xs"
-                      title={t('nav.materialGenerate')}
+                      className="lg:hidden"
                     />
                     {/* 手机端：刷新按钮 */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <IconButton
                       icon={<RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />}
+                      label={t('preview.refresh')}
                       onClick={handleRefresh}
                       disabled={isRefreshing}
-                      className="md:hidden text-xs"
-                      title={t('preview.refresh')}
+                      className="md:hidden"
                     />
                     {imageVersions.length > 1 && (
-                      <div className="relative">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowVersionMenu(!showVersionMenu)}
-                          className="text-xs md:text-sm"
-                        >
-                          <span className="hidden md:inline">{t('preview.historyVersions')} ({imageVersions.length})</span>
-                          <span className="md:hidden">{t('preview.versions')}</span>
-                        </Button>
-                        {showVersionMenu && (
-                          <div className="absolute right-0 bottom-full mb-2 w-56 md:w-64 bg-white dark:bg-background-secondary rounded-lg shadow-lg border border-gray-200 dark:border-border-primary py-2 z-20 max-h-96 overflow-y-auto">
-                            {imageVersions.map((version) => (
-                              <button
-                                key={version.version_id}
-                                onClick={() => handleSwitchVersion(version.version_id)}
-                                className={`w-full px-3 md:px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-background-hover transition-colors flex items-center justify-between text-xs md:text-sm ${
-                                  version.is_current ? 'bg-banana-50 dark:bg-background-secondary' : ''
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span>
-                                    {t('preview.version')} {version.version_number}
-                                  </span>
-                                  {version.is_current && (
-                                    <span className="text-xs text-banana-600 font-medium">
-                                      ({t('preview.current')})
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-xs text-gray-400 hidden md:inline">
-                                  {version.created_at
-                                    ? new Date(version.created_at).toLocaleString('zh-CN', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      })
-                                    : ''}
+                      <DropdownMenu open={showVersionMenu} onOpenChange={setShowVersionMenu}>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-xs md:text-sm">
+                            <span className="hidden md:inline">{t('preview.historyVersions')} ({imageVersions.length})</span>
+                            <span className="md:hidden">{t('preview.versions')}</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" side="top" className="w-56 md:w-64 max-h-96 overflow-y-auto">
+                          {imageVersions.map((version) => (
+                            <DropdownMenuItem
+                              key={version.version_id}
+                              onClick={() => handleSwitchVersion(version.version_id)}
+                              className={`flex items-center justify-between text-xs md:text-sm ${
+                                version.is_current ? 'bg-banana-50 dark:bg-background-secondary' : ''
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>
+                                  {t('preview.version')} {version.version_number}
                                 </span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                                {version.is_current && (
+                                  <span className="text-xs text-banana-600 font-medium">
+                                    ({t('preview.current')})
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-xs text-gray-400 hidden md:inline">
+                                {version.created_at
+                                  ? new Date(version.created_at).toLocaleString('zh-CN', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })
+                                  : ''}
+                              </span>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                     <Button
                       variant="secondary"
@@ -2794,69 +2778,60 @@ export const SlidePreview: React.FC = () => {
           </div>
 
           {/* 大纲内容 - 可编辑 */}
-          <div className="bg-gray-50 dark:bg-background-primary rounded-lg border border-gray-200 dark:border-border-primary">
-            <button
-              onClick={() => setIsOutlineExpanded(!isOutlineExpanded)}
-              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-background-hover transition-colors"
-            >
+          <Collapsible
+            open={isOutlineExpanded}
+            onOpenChange={setIsOutlineExpanded}
+            className="bg-gray-50 dark:bg-background-primary rounded-lg border border-gray-200 dark:border-border-primary"
+          >
+            <CollapsibleTrigger className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-background-hover transition-colors">
               <h4 className="text-sm font-semibold text-gray-700 dark:text-foreground-secondary">{t('preview.pageOutline')}</h4>
               {isOutlineExpanded ? (
                 <ChevronUp size={18} className="text-gray-500 dark:text-foreground-tertiary" />
               ) : (
                 <ChevronDown size={18} className="text-gray-500 dark:text-foreground-tertiary" />
               )}
-            </button>
-            {isOutlineExpanded && (
-              <div className="px-4 pb-4 space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1">{t('outline.titleLabel')}</label>
-                  <input
-                    type="text"
-                    value={editOutlineTitle}
-                    onChange={(e) => setEditOutlineTitle(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500"
-                    placeholder={t('preview.enterTitle')}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-foreground-tertiary mb-1">{t('preview.pointsPerLine')}</label>
-                  <textarea
-                    value={editOutlinePoints}
-                    onChange={(e) => setEditOutlinePoints(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500 resize-none"
-                    placeholder={t('preview.enterPointsPerLine')}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4 space-y-3">
+              <Input
+                label={t('outline.titleLabel')}
+                type="text"
+                value={editOutlineTitle}
+                onChange={(e) => setEditOutlineTitle(e.target.value)}
+                placeholder={t('preview.enterTitle')}
+              />
+              <Textarea
+                label={t('preview.pointsPerLine')}
+                value={editOutlinePoints}
+                onChange={(e) => setEditOutlinePoints(e.target.value)}
+                rows={4}
+                placeholder={t('preview.enterPointsPerLine')}
+              />
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* 描述内容 - 可编辑 */}
-          <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700">
-            <button
-              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-              className="w-full px-4 py-3 flex items-center justify-between hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-            >
+          <Collapsible
+            open={isDescriptionExpanded}
+            onOpenChange={setIsDescriptionExpanded}
+            className="bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700"
+          >
+            <CollapsibleTrigger className="w-full px-4 py-3 flex items-center justify-between hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
               <h4 className="text-sm font-semibold text-gray-700 dark:text-foreground-secondary">{t('preview.pageDescription')}</h4>
               {isDescriptionExpanded ? (
                 <ChevronUp size={18} className="text-gray-500 dark:text-foreground-tertiary" />
               ) : (
                 <ChevronDown size={18} className="text-gray-500 dark:text-foreground-tertiary" />
               )}
-            </button>
-            {isDescriptionExpanded && (
-              <div className="px-4 pb-4">
-                <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  rows={8}
-                  className="w-full px-3 py-2 text-sm border border-blue-300 dark:border-blue-700 bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500 resize-none"
-                  placeholder={t('preview.enterDescription')}
-                />
-              </div>
-            )}
-          </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4">
+              <Textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={8}
+                placeholder={t('preview.enterDescription')}
+              />
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* 上下文图片选择 */}
           <div className="bg-gray-50 dark:bg-background-primary rounded-lg border border-gray-200 dark:border-border-primary p-4 space-y-4">
@@ -3185,12 +3160,7 @@ export const SlidePreview: React.FC = () => {
           </div>
 
           <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={skip1KWarningChecked}
-              onChange={(e) => setSkip1KWarningChecked(e.target.checked)}
-              className="w-4 h-4 text-banana-600 rounded focus:ring-banana-500"
-            />
+            <Switch checked={skip1KWarningChecked} onCheckedChange={setSkip1KWarningChecked} />
             <span className="text-sm text-gray-600 dark:text-foreground-tertiary">{t('preview.dontShowAgain')}</span>
           </label>
 

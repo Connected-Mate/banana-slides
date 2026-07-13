@@ -2,6 +2,8 @@ import React, { useRef, useState } from 'react';
 import { Check, Upload, Ban } from 'lucide-react';
 import { Modal } from '@/components/shared/Modal';
 import { Button } from '@/components/shared/Button';
+import { Card } from '@/components/shared/Card';
+import { Badge } from '@/components/ui/badge';
 import { useT } from '@/hooks/useT';
 import { cn } from '@/utils';
 import { getImageUrl } from '@/api/client';
@@ -124,11 +126,10 @@ export const TemplatePickerModal: React.FC<TemplatePickerModalProps> = ({
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {allowNone && (
-            <button
-              type="button"
+            <Card
               onClick={() => handlePick(null)}
               className={cn(
-                'group relative flex aspect-[4/3] flex-col items-center justify-center rounded-xl border-2 border-dashed text-gray-400 transition-all',
+                'group relative flex aspect-[4/3] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-0 text-gray-400 shadow-none transition-all',
                 !currentAssetId
                   ? 'border-banana-500 text-banana-600'
                   : 'border-gray-200 hover:border-gray-300 dark:border-border-primary'
@@ -136,19 +137,18 @@ export const TemplatePickerModal: React.FC<TemplatePickerModalProps> = ({
             >
               <Ban size={24} />
               <span className="mt-1 text-xs">{t('tpm.none')}</span>
-            </button>
+            </Card>
           )}
 
           {assets.map((asset) => {
             const selected = asset.id === currentAssetId;
             const thumb = asset.thumb_url || asset.image_url;
             return (
-              <button
+              <Card
                 key={asset.id}
-                type="button"
                 onClick={() => handlePick(asset.id)}
                 className={cn(
-                  'group relative flex aspect-[4/3] flex-col overflow-hidden rounded-xl border-2 transition-all',
+                  'group relative flex aspect-[4/3] cursor-pointer flex-col overflow-hidden rounded-xl border-2 p-0 shadow-none transition-all',
                   selected
                     ? 'border-banana-500 ring-2 ring-banana-500/40'
                     : 'border-gray-200 hover:border-gray-300 dark:border-border-primary'
@@ -164,20 +164,21 @@ export const TemplatePickerModal: React.FC<TemplatePickerModalProps> = ({
                     <Check size={14} strokeWidth={3} />
                   </span>
                 )}
-                <span
+                <Badge
+                  variant="secondary"
                   className={cn(
-                    'absolute left-1.5 top-1.5 rounded-md px-1.5 py-0.5 text-[10px] font-medium',
+                    'absolute left-1.5 top-1.5 rounded-md border-transparent px-1.5 py-0.5 text-[10px] font-medium shadow-none',
                     statusClass[asset.analysis_status]
                   )}
                 >
                   {t(`tpm.${asset.analysis_status}`)}
-                </span>
+                </Badge>
                 {asset.user_label && (
                   <span className="absolute inset-x-0 bottom-0 truncate bg-black/50 px-1.5 py-1 text-left text-[11px] text-white">
                     {asset.user_label}
                   </span>
                 )}
-              </button>
+              </Card>
             );
           })}
         </div>

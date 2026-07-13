@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { X, FileText, Settings as SettingsIcon, Download, Sparkles, AlertTriangle, HelpCircle } from 'lucide-react';
 import { Button, Textarea } from '@/components/shared';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { useT } from '@/hooks/useT';
 import { Settings } from '@/pages/Settings';
 import type { ExportExtractorMethod, ExportInpaintMethod } from '@/types';
@@ -153,13 +157,15 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
     { value: 'baidu', labelKey: 'projectSettings.backgroundBaidu', descKey: 'projectSettings.backgroundBaiduDesc', usesAI: false },
   ];
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-background-secondary rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent
+        hideClose
+        aria-describedby={undefined}
+        className="flex h-[90vh] w-full max-w-5xl flex-col gap-0 overflow-hidden rounded-xl bg-white p-0 dark:bg-background-secondary"
+      >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-border-primary flex-shrink-0">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-foreground-primary">{t('projectSettings.title')}</h2>
+          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-foreground-primary">{t('projectSettings.title')}</DialogTitle>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors"
@@ -219,7 +225,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                 </div>
 
                 {/* 画面比例 */}
-                <div className="pb-6 border-b border-gray-200 dark:border-border-primary space-y-4">
+                <div className="space-y-4">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary">{t('projectSettings.aspectRatio')}</h4>
@@ -264,9 +270,10 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       {isSavingAspectRatio ? t('shared.saving') : t('common.save')}
                     </Button>
                   )}
+                  <Separator className="mt-6" />
                 </div>
 
-                <div className="pb-6 border-b border-gray-200 dark:border-border-primary space-y-4">
+                <div className="space-y-4">
                   <div>
                     <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('projectSettings.extraRequirements')}</h4>
                     <p className="text-sm text-gray-600 dark:text-foreground-tertiary">
@@ -289,6 +296,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                   >
                     {isSavingRequirements ? t('shared.saving') : t('projectSettings.saveExtraRequirements')}
                   </Button>
+                  <Separator className="mt-6" />
                 </div>
 
                 <div className="space-y-4">
@@ -332,7 +340,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                   </p>
                 </div>
 
-                <div className="pb-6 border-b border-gray-200 dark:border-border-primary space-y-4">
+                <div className="space-y-4">
                   <div>
                     <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('projectSettings.extractorMethod')}</h4>
                     <p className="text-sm text-gray-600 dark:text-foreground-tertiary">
@@ -364,9 +372,10 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       </label>
                     ))}
                   </div>
+                  <Separator className="mt-6" />
                 </div>
 
-                <div className="pb-6 border-b border-gray-200 dark:border-border-primary space-y-4">
+                <div className="space-y-4">
                   <div>
                     <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('projectSettings.backgroundMethod')}</h4>
                     <p className="text-sm text-gray-600 dark:text-foreground-tertiary">
@@ -395,10 +404,10 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-gray-900 dark:text-foreground-primary">{t(option.labelKey)}</span>
                             {option.usesAI && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
+                              <Badge variant="outline" className="gap-1 rounded-full border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
                                 <Sparkles size={12} />
                                 {t('projectSettings.usesAiModel')}
-                              </span>
+                              </Badge>
                             )}
                           </div>
                           <div className="text-sm text-gray-600 dark:text-foreground-tertiary mt-1">{t(option.descKey)}</div>
@@ -412,6 +421,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                       <strong>{t('projectSettings.tip')}：</strong>{t('projectSettings.costTip')}
                     </p>
                   </div>
+                  <Separator className="mt-6" />
                 </div>
 
                 <div className="space-y-4">
@@ -419,11 +429,10 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                     <h4 className="text-base font-semibold text-gray-900 dark:text-foreground-primary mb-2">{t('projectSettings.iconSubjectExtraction')}</h4>
                   </div>
                   <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
+                    <Switch
                       checked={enableIconSubjectExtraction}
-                      onChange={(e) => onEnableIconSubjectExtractionChange?.(e.target.checked)}
-                      className="mt-1 w-4 h-4 text-banana-500 focus:ring-banana-500 rounded"
+                      onCheckedChange={(checked) => onEnableIconSubjectExtractionChange?.(checked)}
+                      className="mt-1"
                     />
                     <div className="flex-1">
                       <div className="font-medium text-gray-900 dark:text-foreground-primary">{t('projectSettings.iconSubjectExtraction')}</div>
@@ -448,11 +457,10 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
                     </p>
                   </div>
                   <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
+                    <Switch
                       checked={exportAllowPartial}
-                      onChange={(e) => onExportAllowPartialChange?.(e.target.checked)}
-                      className="mt-1 w-4 h-4 text-red-500 focus:ring-red-500 rounded"
+                      onCheckedChange={(checked) => onExportAllowPartialChange?.(checked)}
+                      className="mt-1 data-[state=checked]:bg-red-500"
                     />
                     <div className="flex-1">
                       <div className="font-medium text-gray-900 dark:text-foreground-primary">{t('projectSettings.allowPartialResult')}</div>
@@ -494,7 +502,7 @@ export const ProjectSettingsModal: React.FC<ProjectSettingsModalProps> = ({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

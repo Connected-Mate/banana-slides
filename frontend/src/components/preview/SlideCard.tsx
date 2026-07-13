@@ -2,6 +2,8 @@ import React from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { StatusBadge, Skeleton, useConfirm } from '@/components/shared';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { getImageUrl } from '@/api/client';
 import type { Page } from '@/types';
 
@@ -76,16 +78,20 @@ export const SlideCard: React.FC<SlideCardProps> = ({
             />
             {/* 悬停操作 */}
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit();
                 }}
-                className="p-2 bg-white dark:bg-background-secondary rounded-lg hover:bg-banana-50 dark:hover:bg-background-hover transition-colors"
+                className="h-auto w-auto p-2 bg-white dark:bg-background-secondary rounded-lg hover:bg-banana-50 dark:hover:bg-background-hover"
               >
                 <Edit2 size={18} />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={(e) => {
                   e.stopPropagation();
                   confirm(
@@ -94,10 +100,10 @@ export const SlideCard: React.FC<SlideCardProps> = ({
                     { title: t('slideCard.confirmDeleteTitle'), variant: 'danger' }
                   );
                 }}
-                className="p-2 bg-white dark:bg-background-secondary rounded-lg hover:bg-red-50 transition-colors"
+                className="h-auto w-auto p-2 bg-white dark:bg-background-secondary rounded-lg hover:bg-red-50"
               >
                 <Trash2 size={18} className="text-red-600" />
-              </button>
+              </Button>
             </div>
           </>
         ) : (
@@ -125,12 +131,13 @@ export const SlideCard: React.FC<SlideCardProps> = ({
           {index + 1}. {page.outline_content?.title}
         </span>
         {index === 0 && (
-          <span
-            className="text-xs px-1.5 py-0.5 bg-banana-100 dark:bg-banana-900/30 text-banana-700 dark:text-banana-400 rounded flex-shrink-0"
+          <Badge
+            variant="secondary"
+            className="rounded border-transparent shadow-none font-medium px-1.5 py-0.5 text-xs flex-shrink-0 bg-banana-100 dark:bg-banana-900/30 text-banana-700 dark:text-banana-400"
             title={t('slideCard.coverPageTooltip')}
           >
             {t('slideCard.coverPage')}
-          </span>
+          </Badge>
         )}
       </div>
       {ConfirmDialog}

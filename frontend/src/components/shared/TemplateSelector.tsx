@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Button, useToast, MaterialSelector } from '@/components/shared';
+import { Button, Card, useToast, MaterialSelector } from '@/components/shared';
 import { useT } from '@/hooks/useT';
 import { getImageUrl } from '@/api/client';
-import { isDesktop } from '@/utils';
+import { isDesktop, cn } from '@/utils';
 
 // Template 组件自包含翻译
 const templateI18n = {
@@ -187,14 +187,15 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             <h4 className="text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">{t('template.myTemplates')}</h4>
             <div className="grid grid-cols-4 gap-4 mb-4">
               {userTemplates.map((template) => (
-                <div
+                <Card
                   key={template.template_id}
                   onClick={() => handleSelectUserTemplate(template)}
-                  className={`aspect-[4/3] rounded-lg border-2 cursor-pointer transition-all relative group ${
+                  className={cn(
+                    'group relative aspect-[4/3] cursor-pointer rounded-lg border-2 p-0 shadow-none transition-all',
                     selectedTemplateId === template.template_id
                       ? 'border-banana-500 ring-2 ring-banana-200'
-                      : 'border-gray-200 dark:border-border-primary hover:border-banana-300'
-                  }`}
+                      : 'border-gray-200 hover:border-banana-300 dark:border-border-primary'
+                  )}
                 >
                   <img
                     src={getImageUrl(template.thumb_url || template.template_image_url)}
@@ -219,7 +220,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                       <span className="text-white font-semibold text-sm">{t('template.templateSelected')}</span>
                     </div>
                   )}
-                </div>
+                </Card>
               ))}
             </div>
           </div>
@@ -229,14 +230,15 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           <h4 className="text-sm font-medium text-gray-700 dark:text-foreground-secondary mb-2">{t('template.presetTemplates')}</h4>
           <div className="grid grid-cols-4 gap-4">
             {presetTemplates.map((template) => (
-              <div
+              <Card
                 key={template.id}
                 onClick={() => template.preview && handleSelectPresetTemplate(template.id, template.preview)}
-                className={`aspect-[4/3] rounded-lg border-2 cursor-pointer transition-all bg-gray-100 dark:bg-background-secondary flex items-center justify-center relative ${
+                className={cn(
+                  'relative flex aspect-[4/3] cursor-pointer items-center justify-center rounded-lg border-2 bg-gray-100 p-0 shadow-none transition-all dark:bg-background-secondary',
                   selectedPresetTemplateId === template.id
                     ? 'border-banana-500 ring-2 ring-banana-200'
-                    : 'border-gray-200 dark:border-border-primary hover:border-banana-500'
-                }`}
+                    : 'border-gray-200 hover:border-banana-500 dark:border-border-primary'
+                )}
               >
                 {template.preview ? (
                   <>
@@ -254,7 +256,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
                 ) : (
                   <span className="text-sm text-gray-500 dark:text-foreground-tertiary">{t(template.nameKey)}</span>
                 )}
-              </div>
+              </Card>
             ))}
 
             <label className="aspect-[4/3] rounded-lg border-2 border-dashed border-gray-300 dark:border-border-primary hover:border-banana-500 cursor-pointer transition-all flex flex-col items-center justify-center gap-2 relative overflow-hidden">

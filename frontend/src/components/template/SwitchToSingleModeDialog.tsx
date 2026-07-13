@@ -1,11 +1,26 @@
 import React, { useRef, useState } from 'react';
 import { Check, Upload } from 'lucide-react';
-import { Modal } from '@/components/shared/Modal';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/shared/Button';
+import { Card } from '@/components/shared/Card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/shared/Textarea';
 import { useT } from '@/hooks/useT';
 import { cn } from '@/utils';
 import { getImageUrl } from '@/api/client';
 import type { TemplateAsset } from '@/types';
+
+/**
+ * Confirmation à conséquence (changement de mode de template) — AlertDialog
+ * (Radix, pas de fermeture au clic extérieur) plutôt que Modal générique,
+ * même traitement visuel glass que ConfirmDialog.
+ */
 
 const i18n = {
   zh: {
@@ -103,10 +118,27 @@ export const SwitchToSingleModeDialog: React.FC<SwitchToSingleModeDialogProps> =
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={t('ssm.title')} size="wide">
-      <div className="space-y-4">
-        <p className="text-sm text-gray-500 dark:text-foreground-tertiary">{t('ssm.desc')}</p>
+    <AlertDialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+      <AlertDialogContent
+        className={cn(
+          'flex max-h-[85vh] w-full max-w-[1120px] flex-col gap-0 overflow-hidden p-0',
+          'bg-white/95 dark:bg-[#1a1a24]/95 backdrop-blur-xl',
+          'border border-white/20 dark:border-white/10',
+          'rounded-3xl sm:rounded-3xl',
+          'shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05),0_12px_24px_rgba(0,0,0,0.09)]',
+          'dark:shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.2),0_12px_24px_rgba(0,0,0,0.4)]'
+        )}
+      >
+        <AlertDialogHeader className="flex-shrink-0 px-7 pb-5 pt-7">
+          <AlertDialogTitle className="font-display text-xl font-semibold tracking-tight text-gray-900 dark:text-foreground-primary">
+            {t('ssm.title')}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-sm text-gray-500 dark:text-foreground-tertiary">
+            {t('ssm.desc')}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
 
+      <div className="max-h-[85vh] flex-1 space-y-4 overflow-y-auto px-7 pb-7">
         <div className="flex items-center justify-between gap-2">
           <Button
             variant="secondary"
@@ -141,15 +173,14 @@ export const SwitchToSingleModeDialog: React.FC<SwitchToSingleModeDialogProps> =
             const selected = asset.id === selectedId && !pendingFile;
             const thumb = asset.thumb_url || asset.image_url;
             return (
-              <button
+              <Card
                 key={asset.id}
-                type="button"
                 onClick={() => {
                   setSelectedId(asset.id);
                   setPendingFile(null);
                 }}
                 className={cn(
-                  'group relative flex aspect-[4/3] flex-col overflow-hidden rounded-xl border-2 transition-all',
+                  'group relative flex aspect-[4/3] cursor-pointer flex-col overflow-hidden rounded-xl border-2 p-0 shadow-none transition-all',
                   selected
                     ? 'border-banana-500 ring-2 ring-banana-500/40'
                     : 'border-gray-200 hover:border-gray-300 dark:border-border-primary'
@@ -170,16 +201,16 @@ export const SwitchToSingleModeDialog: React.FC<SwitchToSingleModeDialogProps> =
                     {asset.user_label}
                   </span>
                 )}
-              </button>
+              </Card>
             );
           })}
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-foreground-secondary">
+          <Label className="mb-1 block text-xs font-medium text-gray-600 dark:text-foreground-secondary">
             {t('ssm.styleLabel')}
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             className="min-h-[60px] w-full resize-y rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm text-gray-800 outline-none focus:border-banana-500 dark:border-border-primary dark:bg-background-secondary dark:text-foreground-primary"
             placeholder={t('ssm.stylePlaceholder')}
             value={styleText}
@@ -202,7 +233,8 @@ export const SwitchToSingleModeDialog: React.FC<SwitchToSingleModeDialogProps> =
           </Button>
         </div>
       </div>
-    </Modal>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 

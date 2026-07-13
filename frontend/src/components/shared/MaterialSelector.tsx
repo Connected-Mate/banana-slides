@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ImageIcon, RefreshCw, Upload, Sparkles, X } from 'lucide-react';
 import { Button, useToast, Modal } from '@/components/shared';
+import { Badge } from '@/components/ui/badge';
 import { useT } from '@/hooks/useT';
 import { listMaterials, uploadMaterial, listProjects, deleteMaterial, type Material } from '@/api/endpoints';
 
@@ -263,9 +264,9 @@ export const MaterialSelector: React.FC<MaterialSelectorProps> = ({
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-foreground-tertiary">
               <span>{materials.length > 0 ? t('material.totalMaterials', { count: materials.length }) : t('material.noMaterials')}</span>
               {selectedMaterials.size > 0 && (
-                <span className="ml-2 text-banana-600">
+                <Badge variant="secondary" className="ml-2 text-banana-600">
                   {t('material.selectedCount', { count: selectedMaterials.size })}
-                </span>
+                </Badge>
               )}
               {isLoading && materials.length > 0 && (
                 <RefreshCw size={14} className="animate-spin text-gray-400" />

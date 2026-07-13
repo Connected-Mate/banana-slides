@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GripVertical, Edit2, Trash2, Check, X } from 'lucide-react';
 import { useT } from '@/hooks/useT';
 import { useImagePaste, buildMaterialsMarkdown } from '@/hooks/useImagePaste';
-import { Card, useConfirm, Markdown, ShimmerOverlay, MaterialSelector } from '@/components/shared';
+import { Card, Button, IconButton, useConfirm, Markdown, ShimmerOverlay, MaterialSelector } from '@/components/shared';
 import { MarkdownTextarea, type MarkdownTextareaRef } from '@/components/shared/MarkdownTextarea';
+import { Input } from '@/components/ui/input';
 import type { Page, Material } from '@/types';
 
 // OutlineCard 组件自包含翻译
@@ -144,12 +145,12 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
               </span>
             )}
             {isEditing ? (
-              <input
+              <Input
                 type="text"
                 value={editPart}
                 onChange={(e) => setEditPart(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
-                className="text-xs px-2 py-0.5 w-24 border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="h-6 w-24 rounded px-2 py-0.5 text-xs border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 focus-visible:ring-1 focus-visible:ring-blue-500"
                 placeholder={t('outlineCard.chapter')}
               />
             ) : (
@@ -164,11 +165,11 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
           {isEditing ? (
             /* 编辑模式 */
             <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
-              <input
+              <Input
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-border-primary bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-banana-500"
+                className="rounded-lg bg-white dark:bg-background-secondary text-gray-900 dark:text-foreground-primary focus-visible:ring-banana-500"
                 placeholder={t('outlineCard.titleLabel')}
               />
               <div>
@@ -184,21 +185,12 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <button
-                  onClick={handleCancel}
-                  className="px-3 py-1.5 text-sm text-gray-700 dark:text-foreground-secondary hover:bg-gray-100 dark:hover:bg-background-hover rounded-lg transition-colors"
-                >
-                  <X size={16} className="inline mr-1" />
+                <Button variant="ghost" size="sm" icon={<X size={16} />} onClick={handleCancel}>
                   {t('common.cancel')}
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={isUploading}
-                  className="px-3 py-1.5 text-sm bg-banana-500 text-black rounded-lg hover:bg-banana-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Check size={16} className="inline mr-1" />
+                </Button>
+                <Button variant="primary" size="sm" icon={<Check size={16} />} onClick={handleSave} disabled={isUploading}>
                   {t('common.save')}
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -217,16 +209,21 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
         {/* 操作按钮 */}
         {!isEditing && (
           <div className="flex-shrink-0 flex gap-2">
-            <button
+            <IconButton
+              icon={<Edit2 size={16} />}
+              label={t('common.edit')}
+              variant="primary"
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(true);
               }}
-              className="p-1.5 text-gray-500 dark:text-foreground-tertiary hover:text-banana-600 hover:bg-banana-50 dark:hover:bg-background-hover rounded transition-colors"
-            >
-              <Edit2 size={16} />
-            </button>
-            <button
+            />
+            <IconButton
+              icon={<Trash2 size={16} />}
+              label={t('common.delete')}
+              variant="danger"
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 confirm(
@@ -235,10 +232,7 @@ export const OutlineCard: React.FC<OutlineCardProps> = ({
                   { title: t('outlineCard.confirmDeleteTitle'), variant: 'danger' }
                 );
               }}
-              className="p-1.5 text-gray-500 dark:text-foreground-tertiary hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-            >
-              <Trash2 size={16} />
-            </button>
+            />
           </div>
         )}
       </div>

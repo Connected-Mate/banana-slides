@@ -4,6 +4,9 @@ import { useT } from '@/hooks/useT';
 import { listMaterials, deleteMaterial, listProjectReferenceFiles, type Material, type ReferenceFile } from '@/api/endpoints';
 import { getImageUrl } from '@/api/client';
 import { ReferenceFileCard } from './ReferenceFileCard';
+import { IconButton } from '@/components/shared';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 // ProjectResourcesList 组件自包含翻译
 const projectResourcesI18n = {
@@ -157,17 +160,17 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
             <div className="flex items-center gap-2">
               <FileText size={16} className="text-gray-500 dark:text-foreground-tertiary" />
               <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">
-                {t('projectResources.uploadedFiles')} ({files.length})
+                {t('projectResources.uploadedFiles')}
               </span>
+              <Badge variant="secondary" className="font-normal">{files.length}</Badge>
             </div>
-            <button
+            <IconButton
+              icon={<RefreshCw size={14} />}
+              label={t('projectResources.refreshList')}
+              size="sm"
+              loading={isLoadingFiles}
               onClick={loadFiles}
-              disabled={isLoadingFiles}
-              className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-              title={t('projectResources.refreshList')}
-            >
-              <RefreshCw size={14} className={isLoadingFiles ? 'animate-spin' : ''} />
-            </button>
+            />
           </div>
           <div className="space-y-2">
             {files.map(file => (
@@ -185,6 +188,11 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
         </div>
       )}
 
+      {/* Separateur entre la liste de fichiers et la liste d'images */}
+      {showFiles && files.length > 0 && showImages && materials.length > 0 && (
+        <Separator className="mb-4" />
+      )}
+
       {/* 图片素材列表 */}
       {showImages && materials.length > 0 && (
         <div>
@@ -192,17 +200,17 @@ export const ProjectResourcesList: React.FC<ProjectResourcesListProps> = ({
             <div className="flex items-center gap-2">
               <ImageIcon size={16} className="text-gray-500 dark:text-foreground-tertiary" />
               <span className="text-sm font-medium text-gray-700 dark:text-foreground-secondary">
-                {t('projectResources.uploadedImages')} ({materials.length})
+                {t('projectResources.uploadedImages')}
               </span>
+              <Badge variant="secondary" className="font-normal">{materials.length}</Badge>
             </div>
-            <button
+            <IconButton
+              icon={<RefreshCw size={14} />}
+              label={t('projectResources.refreshList')}
+              size="sm"
+              loading={isLoadingMaterials}
               onClick={loadMaterials}
-              disabled={isLoadingMaterials}
-              className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-50"
-              title={t('projectResources.refreshList')}
-            >
-              <RefreshCw size={14} className={isLoadingMaterials ? 'animate-spin' : ''} />
-            </button>
+            />
           </div>
 
           {/* 横向滚动的图片列表 */}

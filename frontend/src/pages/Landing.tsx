@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, FileText, MessageSquare, Download, ChevronRight, Github, ChevronLeft } from 'lucide-react';
-import { Button, Footer } from '@/components/shared';
+import { Button, Card, Footer } from '@/components/shared';
+import { Badge } from '@/components/ui/badge';
 import { useT } from '@/hooks/useT';
 import logoUrl from '@/assets/logo.png';
 
@@ -121,13 +122,16 @@ export const Landing: React.FC = () => {
       {/* Hero 区域 */}
       <main className="flex-1 relative z-10 flex flex-col justify-center max-w-7xl mx-auto px-6 py-12 lg:py-20 text-center">
         <div className="space-y-8 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-background-secondary border border-gray-200 dark:border-border-primary text-gray-600 dark:text-foreground-secondary text-sm font-medium mx-auto shadow-sm">
+          <Badge
+            variant="outline"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-background-secondary border-gray-200 dark:border-border-primary text-gray-600 dark:text-foreground-secondary text-sm font-medium mx-auto shadow-sm"
+          >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-banana-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-banana-500"></span>
             </span>
             {t('landing.hero.badge')}
-          </div>
+          </Badge>
 
           <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-gray-900 dark:text-foreground-primary leading-[1.1]">
             {t('landing.hero.title_start')}
@@ -166,7 +170,7 @@ export const Landing: React.FC = () => {
           </div>
 
           {/* 案例展示区域 (Carousel) */}
-          <div className="relative mt-20 mx-auto max-w-5xl rounded-2xl overflow-hidden shadow-2xl border border-gray-200/50 dark:border-border-primary bg-white dark:bg-background-secondary animate-float-slow group">
+          <Card className="relative mt-20 mx-auto max-w-5xl rounded-2xl overflow-hidden shadow-2xl border-gray-200/50 dark:border-border-primary bg-white dark:bg-background-secondary animate-float-slow group">
             {/* 顶部标题栏模拟 */}
             <div className="h-8 bg-gray-50 dark:bg-background-tertiary border-b border-gray-100 dark:border-border-primary flex items-center px-4 gap-2">
               <div className="flex gap-1.5">
@@ -220,7 +224,7 @@ export const Landing: React.FC = () => {
                 ))}
               </div>
             </div>
-          </div>
+          </Card>
         </div>
       </main>
 
@@ -262,10 +266,10 @@ export const Landing: React.FC = () => {
 
                 {/* 视觉区域 */}
                 <div className="flex-1 w-full max-w-lg lg:max-w-none">
-                  <div className={`aspect-square rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-border-primary ${feature.bg} bg-opacity-30 dark:bg-opacity-10 flex items-center justify-center relative group hover:scale-[1.02] transition-transform duration-500`}>
+                  <Card className={`aspect-square rounded-3xl overflow-hidden shadow-2xl border-gray-100 dark:border-border-primary ${feature.bg} bg-opacity-30 dark:bg-opacity-10 flex items-center justify-center relative group hover:scale-[1.02] transition-transform duration-500`}>
                     {/* 装饰背景 */}
                     <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 dark:to-transparent" />
-                    
+
                     {/* 中心图标/内容 */}
                     <div className="relative z-10 transform transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
                       {React.cloneElement(feature.icon as React.ReactElement, { size: 120, strokeWidth: 1.5 })}
@@ -273,7 +277,7 @@ export const Landing: React.FC = () => {
 
                     {/* 装饰元素 */}
                     <div className="absolute top-1/4 left-1/4 w-24 h-24 bg-current opacity-10 rounded-full blur-2xl animate-pulse" style={{ color: feature.icon.props.className.includes('yellow') ? '#EAB308' : feature.icon.props.className.includes('blue') ? '#3B82F6' : feature.icon.props.className.includes('green') ? '#22C55E' : '#A855F7' }} />
-                  </div>
+                  </Card>
                 </div>
               </div>
             </div>

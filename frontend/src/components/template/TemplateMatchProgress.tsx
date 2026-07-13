@@ -1,5 +1,6 @@
 import React from 'react';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useT } from '@/hooks/useT';
 import { cn } from '@/utils';
 import type { Task } from '@/types';
@@ -53,19 +54,22 @@ export const TemplateMatchProgress: React.FC<TemplateMatchProgressProps> = ({ ta
         {isRunning && <Loader2 size={16} className="animate-spin text-banana-600" />}
         {isDone && <CheckCircle2 size={16} className="text-green-600" />}
         {isFailed && <XCircle size={16} className="text-red-600" />}
-        <span
+        <Badge
+          variant="secondary"
           className={cn(
-            isDone && 'text-green-700 dark:text-green-400',
-            isFailed && 'text-red-700 dark:text-red-400',
-            isRunning && 'text-gray-700 dark:text-foreground-primary'
+            'rounded border-transparent shadow-none font-medium',
+            isDone && 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+            isFailed && 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+            isRunning && 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
           )}
         >
           {isRunning && t('tmp.matching')}
           {isDone && t('tmp.done')}
           {isFailed && t('tmp.failed')}
-        </span>
+        </Badge>
       </div>
 
+      {/* ui/progress absent du design system — barre custom conservée */}
       {!isFailed && (
         <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-background-hover">
           <div

@@ -17,7 +17,10 @@ import {
 import { useT } from '@/hooks/useT';
 import { cn } from '@/utils';
 import { getImageUrl } from '@/api/client';
-import { Button, IconButton, Loading, useToast, useConfirm } from '@/components/shared';
+import { Button, IconButton, Loading, useToast, useConfirm, Card } from '@/components/shared';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useProjectStore } from '@/store/useProjectStore';
 import { TemplatePickerModal } from '@/components/template/TemplatePickerModal';
 import { TemplateAnalysisEditor } from '@/components/template/TemplateAnalysisEditor';
@@ -408,10 +411,10 @@ export const TemplateSetupPage: React.FC = () => {
                 {templateAssets.map((asset) => {
                   const expanded = expandedAssetId === asset.id;
                   return (
-                    <div
+                    <Card
                       key={asset.id}
                       className={cn(
-                        'rounded-xl border p-3',
+                        'rounded-xl border p-3 shadow-none',
                         asset.analysis_status === 'failed'
                           ? 'border-red-300 dark:border-red-700'
                           : 'border-gray-200 dark:border-border-primary'
@@ -425,8 +428,8 @@ export const TemplateSetupPage: React.FC = () => {
                         />
                         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                           <div className="flex items-center gap-2">
-                            <input
-                              className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-xs font-medium text-gray-800 outline-none transition-colors hover:border-gray-200 hover:bg-white focus:border-banana-500 focus:bg-white dark:text-foreground-primary dark:hover:border-border-primary dark:hover:bg-background-hover dark:focus:bg-background-hover"
+                            <Input
+                              className="h-auto min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-xs font-medium text-gray-800 shadow-none outline-none transition-colors hover:border-gray-200 hover:bg-white focus-visible:ring-0 focus:border-banana-500 focus:bg-white dark:text-foreground-primary dark:hover:border-border-primary dark:hover:bg-background-hover dark:focus:bg-background-hover"
                               placeholder={t('ts.labelPlaceholder')}
                               defaultValue={asset.user_label || ''}
                               onBlur={(e) => {
@@ -441,14 +444,15 @@ export const TemplateSetupPage: React.FC = () => {
                                 }
                               }}
                             />
-                            <span
+                            <Badge
+                              variant="secondary"
                               className={cn(
-                                'shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium',
+                                'shrink-0 rounded-md border-transparent px-1.5 py-0.5 text-[10px] font-medium shadow-none',
                                 statusClass[asset.analysis_status]
                               )}
                             >
                               {t(`ts.status${asset.analysis_status.charAt(0).toUpperCase()}${asset.analysis_status.slice(1)}`)}
-                            </span>
+                            </Badge>
                           </div>
                           <div className="mt-auto flex items-center gap-0.5">
                             <IconButton
@@ -492,7 +496,7 @@ export const TemplateSetupPage: React.FC = () => {
                           />
                         </div>
                       )}
-                    </div>
+                    </Card>
                   );
                 })}
               </div>
@@ -518,9 +522,9 @@ export const TemplateSetupPage: React.FC = () => {
                 const title =
                   page.outline_content?.title || t('ts.page', { num: String(idx + 1) });
                 return (
-                  <div
+                  <Card
                     key={pageId}
-                    className="rounded-xl border border-gray-200 p-3 dark:border-border-primary"
+                    className="rounded-xl border border-gray-200 p-3 shadow-none dark:border-border-primary"
                   >
                     <div className="flex items-start gap-3">
                       <span className="mt-0.5 shrink-0 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-500 dark:bg-background-hover dark:text-foreground-secondary">
@@ -576,8 +580,8 @@ export const TemplateSetupPage: React.FC = () => {
                     </div>
                     {editingStyle && (
                       <div className="mt-3 flex items-start gap-2">
-                        <textarea
-                          className="min-h-[44px] flex-1 resize-y rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 outline-none focus:border-banana-500 dark:border-border-primary dark:bg-background-secondary dark:text-foreground-primary"
+                        <Textarea
+                          className="min-h-[44px] flex-1 resize-y rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-800 shadow-none outline-none focus-visible:ring-0 focus:border-banana-500 dark:border-border-primary dark:bg-background-secondary dark:text-foreground-primary"
                           placeholder={t('ts.stylePlaceholder')}
                           value={styleDraft}
                           onChange={(e) => setStyleDraft(e.target.value)}
@@ -594,7 +598,7 @@ export const TemplateSetupPage: React.FC = () => {
                         </Button>
                       </div>
                     )}
-                  </div>
+                  </Card>
                 );
               })}
             </div>
