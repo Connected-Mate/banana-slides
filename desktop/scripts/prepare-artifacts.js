@@ -22,8 +22,8 @@ const generatedMacIconPath = path.join(desktopDir, 'resources', 'icon.icns');
 const ffmpegCacheDir = path.join(desktopDir, '.cache', 'ffmpeg');
 
 const windowsFfmpegArchive = {
-  url: 'https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-06-27-13-21/ffmpeg-n7.1.5-1-g7d0e842004-win64-gpl-7.1.zip',
-  sha256: 'd08d3c08dc2b84b3cb59ea110ac8b188684768fc77a5f0f288e13d0258ef1660',
+  url: 'https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-07-12-13-16/ffmpeg-n7.1.5-2-g998de74adf-win64-gpl-7.1.zip',
+  sha256: '048b76a787a63384a1a65073ef8c2f2048433454a99a8d2ba624bb1f1b5a13cc',
 };
 
 function copyDir(src, dest) {
