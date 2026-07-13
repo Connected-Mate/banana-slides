@@ -1,6 +1,6 @@
 {
   "name": "banana-slides",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "AI-powered PPT generation application",
   "private": true,
   "scripts": {
